@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <title>AEC Cloud Information Model Dashboards- BETA</title>
+  <meta charset="utf-8" />
+  <link rel="shortcut icon" href="http://cdn.autodesk.io/favicon.ico">
+  <link rel="mask-icon" href="http://cdn.autodesk.io/favicon.ico">
+  <link rel="stylesheet" href="main.css" />
+  <!-- This link will always fetch the latest version of Balloon.css -->
+  <link rel="stylesheet" href="https://unpkg.com/balloon-css/balloon.min.css" />
+</head>
+
+<body>
+  <div id="header">
+    <img class="logo" src="https://cdn.autodesk.io/logo/black/stacked.png" alt="Autodesk Platform Services">
+    <span class="title">AEC Cloud Information Dashboards - BETA</span>
+    <div id="hubinput" data-balloon-length="fit" aria-label="Choose your hub id here"
+         data-balloon-pos="down">
+      <select class="dropdowns" name="state" id="hubsdropdown">
+      </select>
+    </div>
+    <div id="projectinput" data-balloon-length="fit" aria-label="Choose your project id here"
+         data-balloon-pos="down">
+      <select class="dropdowns" name="state" id="projectsdropdown">
+      </select>
+    </div>
+    <button id="addchart" data-balloon-length="fit" aria-label="Add Chart!"
+            data-balloon-pos="down">
+      Add Chart
+    </button>
+    <button id="login" style="visibility: hidden;" data-balloon-length="fit" aria-label="Login Here!"
+            data-balloon-pos="down">
+      Login
+    </button>
+  </div>
+  <div id="aeccim-dashboards"></div>
+  <!-- Sweet alert 2 to handle notifications -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Chart js for graphics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-autocolors"></script>
+  <!-- swappable -->
+  <script src="https://cdn.jsdelivr.net/npm/@shopify/draggable@1.0.0-beta.11/lib/swappable.js"></script>
+  <!-- Plugins only -->
+  <script src="https://cdn.jsdelivr.net/npm/@shopify/draggable@1.0.0-beta.11/lib/plugins.js"></script>
+  <script src="./main.js" type="module"></script>
+  <script src="./graphql.js" type="module"></script>
+</body>
+
+</html>
