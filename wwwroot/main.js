@@ -1,4 +1,4 @@
-﻿import { getHubs, getDesigns, getDesignDoors, getProjects } from './graphql.js';
+﻿import { getHubs, getProjects, getDesignElements} from './graphql.js';
 
 const autocolors = window['chartjs-plugin-autocolors'];
 
@@ -27,60 +27,12 @@ window.addEventListener("load", async () => {
     }
   };
 
+  prepareSwapFlexbox();
+
   const addChartButton = document.getElementById('addchart');
   addChartButton.onclick = async () => {
-    const dashboardsContainer = document.getElementById('aeccim-dashboards');
-    let chartDiv = document.createElement("div");
-    chartDiv.className = "chartDiv";
-    let chartCanvas = document.createElement("canvas");
-    chartCanvas.className = "chartcanvas";
-    chartDiv.appendChild(chartCanvas);
-    dashboardsContainer.appendChild(chartDiv);
-    let newChart = new Chart(
-      chartCanvas,
-      {
-        type: 'pie',
-        data: {
-          labels: [],
-          datasets: [
-            {
-              label: 'Doors by type',
-              data: [],
-              //backgroundColor:,
-              hoverOffset: 4
-            }
-          ],
-        },
-        plugins: [
-          autocolors
-        ],
-        options: {
-          plugins: {
-            autocolors: {
-              mode: 'label'
-            }
-          }
-        }
-      }
-    );
-    let chartId = uuidv4();
-    GLOBAL_CHARTS[chartId] = newChart;
-
-    //const designsResponse = await getDesigns(hubsDropDown.value, projectsDropDown.value);
-    let designsDoors = [];
-
-    let designDoorsResponse = await getDesignDoors(hubsDropDown.value, projectsDropDown.value, chartId);
-    designDoorsResponse.designEntities.results.length > 0 ? designsDoors.push(...designDoorsResponse.designEntities.results) : null;
-
-    let doorTypes = {};
-    for (const door of designsDoors) {
-      let doorFamily = door.properties.results.find(t => t.name == "family");
-      if (!Object.keys(doorTypes).includes(doorFamily.value)) {
-        doorTypes[doorFamily.value] = 0;
-      }
-      doorTypes[doorFamily.value]++
-    }
-    updatechart(chartId, doorTypes);
+    //Swal to specify filter and parameter to search
+    createChart(filter, parameter);
   };
 
 
@@ -99,7 +51,102 @@ window.addEventListener("load", async () => {
     alert('Could not initialize the application. See console for more details.');
     console.error(err);
   }
-})
+});
+
+async function createChart(filter, parameter) {
+
+  const dashboardsContainer = document.getElementById('aeccim-dashboards');
+  let chartDiv = document.createElement("div");
+  chartDiv.className = "chartDiv draggable";
+
+  let closebutton = document.createElement('span');
+  closebutton.id = 'close';
+  closebutton.onclick = function () {
+    this.parentNode.remove();
+    return false;
+  };
+  closebutton.innerHTML = 'X';
+  chartDiv.appendChild(closebutton);
+
+  let movebutton = document.createElement('span');
+  movebutton.id = 'move';
+  movebutton.className = 'draggable-handle';
+  movebutton.innerHTML = 'M';
+  chartDiv.appendChild(movebutton);
+
+  //Create canvas inside div
+  let chartCanvas = document.createElement("canvas");
+  chartCanvas.className = "chartcanvas";
+  chartDiv.appendChild(chartCanvas);
+  dashboardsContainer.appendChild(chartDiv);
+  let newChart = new Chart(
+    chartCanvas,
+    {
+      type: 'pie',
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: `${parameter}`,
+            data: [],
+            //backgroundColor:,
+            hoverOffset: 4
+          }
+        ],
+      },
+      plugins: [
+        autocolors
+      ],
+      options: {
+        plugins: {
+          autocolors: {
+            mode: 'label'
+          }
+        }
+      }
+    }
+  );
+  let chartId = uuidv4();
+  GLOBAL_CHARTS[chartId] = newChart;
+
+  let designsElements = [];
+
+  let designElementsResponse = await getDesignElements(hubsDropDown.value, projectsDropDown.value, chartId);
+  designElementsResponse.elements.results.length > 0 ? designsDoors.push(...designsElements.elements.results) : null;
+
+  let elements = {};
+  for (const designElement of designsElements) {
+    let elementParameter = designElement.properties.results.find(t => t.name == parameter);
+    if (!Object.keys(elements).includes(elementParameter.value)) {
+      elements[elementParameter.value] = 0;
+    }
+    elements[elementParameter.value]++
+  }
+  updateChart(chartId, elements, filter, parameter);
+}
+
+function updateChart(chartId, elements, filter, parameter) {
+
+}
+
+function prepareSwapFlexbox () {
+  const containers = document.querySelectorAll('#aeccim-dashboards');
+
+  if (containers.length === 0) {
+    return false;
+  }
+
+  var swappable = new Swappable.default(containers, {
+    draggable: ".draggable",
+    handle: ".draggable .draggable-handle",
+    mirror: {
+      //appendTo: selector,
+      appendTo: "body"
+    }
+  });
+
+  return swappable;
+}
 
 async function showToast(message) {
   Swal.fire({
@@ -111,35 +158,7 @@ async function showToast(message) {
   })
 }
 
-async function resizeGraphiql(graphiqlDiv, increase) {
-  if (increase) {
-    graphiqlDiv.style.height = 'calc(100% - 3em)';
-  }
-  else {
-    graphiqlDiv.style.height = 'calc(70%)';
-  }
-}
 
-async function loadNDisplayModel(graphiqlDiv, viewerDiv, viewer, urn) {
-  try {
-    viewerDiv.style.visibility = 'visible';
-    viewerDiv.style.height = `calc( ${document.body.scrollHeight}px - (1em + ${graphiqlDiv.clientHeight}px))`;
-    viewer.resize();
-    loadModel(viewer, btoa(urn)).then();
-  }
-  catch (err) {
-    console.log(`Not able to load the model: ${err}`);
-  }
-}
-
-async function hideModel(viewerDiv) {
-  try {
-    viewerDiv.style.visibility = 'hidden';
-  }
-  catch (err) {
-    console.log(`Not able to load the model: ${err}`);
-  }
-}
 
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>

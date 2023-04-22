@@ -28,24 +28,27 @@ public partial class APS
 	private readonly string _clientSecret;
 	private readonly string _callbackUri;
 	private readonly Scope[] InternalTokenScopes = new Scope[] { Scope.DataRead, Scope.ViewablesRead };
-	private readonly Scope[] PublicTokenScopes = new Scope[] { Scope.ViewablesRead };
-	private const string BASE_URL = "https://developer.api.autodesk.com/aeccloudinformationmodel/2022-11/graphql";
+	private readonly Scope[] PublicTokenScopes = new Scope[] { Scope.DataRead, Scope.ViewablesRead };
 
 	public APS(string clientId, string clientSecret, string callbackUri)
 	{
 		_clientId = clientId;
 		_clientSecret = clientSecret;
+		_callbackUri = callbackUri;
 	}
 
 	public string GetAuthorizationURL()
 	{
-		return new ThreeLeggedApi().Authorize(_clientId, "code", _callbackUri, InternalTokenScopes);
+		string authorizationurl = new ThreeLeggedApi().Authorize(_clientId, "code", _callbackUri, InternalTokenScopes);
+		return authorizationurl.Replace("developer.api", "developer-stg.api");
 	}
 
 	public async Task<Tokens> GenerateTokens(string code)
 	{
-		dynamic internalAuth = await new ThreeLeggedApi().GettokenAsync(_clientId, _clientSecret, "authorization_code", code, _callbackUri);
-		dynamic publicAuth = await new ThreeLeggedApi().RefreshtokenAsync(_clientId, _clientSecret, "refresh_token", internalAuth.refresh_token, PublicTokenScopes);
+		var threeleggedapi = new ThreeLeggedApi();
+		threeleggedapi.Configuration.ApiClient = new Autodesk.Forge.Client.ApiClient("https://developer-stg.api.autodesk.com");
+		dynamic internalAuth = await threeleggedapi.GettokenAsync(_clientId, _clientSecret, "authorization_code", code, _callbackUri);
+		dynamic publicAuth = await threeleggedapi.RefreshtokenAsync(_clientId, _clientSecret, "refresh_token", internalAuth.refresh_token, PublicTokenScopes);
 		return new Tokens
 		{
 			PublicToken = publicAuth.access_token,
@@ -57,14 +60,16 @@ public partial class APS
 
 	public async Task<Tokens> RefreshTokens(Tokens tokens)
 	{
-		dynamic internalAuth = await new ThreeLeggedApi().RefreshtokenAsync(_clientId, _clientSecret, "refresh_token", tokens.RefreshToken, InternalTokenScopes);
-		dynamic publicAuth = await new ThreeLeggedApi().RefreshtokenAsync(_clientId, _clientSecret, "refresh_token", internalAuth.refresh_token, PublicTokenScopes);
+		var threeleggedapi = new ThreeLeggedApi();
+		threeleggedapi.Configuration.ApiClient = new Autodesk.Forge.Client.ApiClient("https://developer-stg.api.autodesk.com");
+		dynamic internalAuth = await threeleggedapi.RefreshtokenAsync(_clientId, _clientSecret, "refresh_token", tokens.RefreshToken, InternalTokenScopes);
+		dynamic publicAuth = await threeleggedapi.RefreshtokenAsync(_clientId, _clientSecret, "refresh_token", internalAuth.refresh_token, PublicTokenScopes);
 		return new Tokens
 		{
 			PublicToken = publicAuth.access_token,
 			InternalToken = internalAuth.access_token,
 			RefreshToken = publicAuth.refresh_token,
-			ExpiresAt = DateTime.Now.ToUniversalTime().AddSeconds(internalAuth.expires_in)
+			ExpiresAt = DateTime.Now.ToUniversalTime().AddSeconds(internalAuth.expires_in).AddSeconds(-1700)
 		};
 	}
 
