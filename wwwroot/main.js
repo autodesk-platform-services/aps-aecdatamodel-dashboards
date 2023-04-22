@@ -1,13 +1,15 @@
-﻿import { getHubs, getProjects, getDesignElements} from './graphql.js';
+﻿import { getHubs, getProjects, getDesignElements, getProjectProperties} from './graphql.js';
 
 const autocolors = window['chartjs-plugin-autocolors'];
+
+window.propertiesNames = [];
 
 window.addEventListener("load", async () => {
   const login = document.getElementById('login');
   const hubsDropDown = document.getElementById('hubsdropdown');
   let hubsResponse = await getHubs();
-  if (!!hubsResponse.hubs) {
-    for (const hub of Object.values(hubsResponse.hubs.results)) {
+  if (!!hubsResponse.data) {
+    for (const hub of Object.values(hubsResponse.data.hubs.results)) {
       let hubOption = document.createElement("option");
       hubOption.text = hub.name;
       hubOption.value = hub.id;
@@ -19,12 +21,23 @@ window.addEventListener("load", async () => {
   hubsDropDown.onchange = async () => {
     projectsDropDown.innerHTML = '';
     let projectsResponse = await getProjects(hubsDropDown.value);
-    for (const project of Object.values(projectsResponse.projects.results)) {
+    for (const project of Object.values(projectsResponse.data.projects.results)) {
       let projectOption = document.createElement("option");
       projectOption.text = project.name;
       projectOption.value = project.id;
       projectsDropDown.appendChild(projectOption);
     }
+    setInterval(async () => {
+      if (propertiesNames.length == 0) {
+        let selectedProjectProperties = await getProjectProperties(projectsDropDown.value);
+        propertiesNames = selectedProjectProperties.map(p => p.name);
+      }
+    }, 3000)
+  };
+
+  projectsDropDown.onchange = async () => {
+    let selectedProjectProperties = await getProjectProperties(projectsDropDown.value);
+    propertiesNames = selectedProjectProperties.map(p => p.name);
   };
 
   prepareSwapFlexbox();
@@ -32,6 +45,16 @@ window.addEventListener("load", async () => {
   const addChartButton = document.getElementById('addchart');
   addChartButton.onclick = async () => {
     //Swal to specify filter and parameter to search
+    const { parameter: fruit } = await Swal.fire({
+      title: 'Select field validation',
+      input: 'select',
+      inputOptions: propertiesNames,
+      inputPlaceholder: 'Select a parameter to build the chart',
+      showCancelButton: true
+    })
+
+    console.log(`Parameter ${parameter} selected!`)
+    
     createChart(filter, parameter);
   };
 
