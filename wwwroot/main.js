@@ -42,8 +42,8 @@ window.addEventListener("load", async () => {
     const { value: formValues } = await Swal.fire({
       title: 'Add property-based chart',
       html:
-        '<input id="property" class="swal2-input" placeholder="Type a property name here!">' +
-        '<input id="filter" class="swal2-input" placeholder="Type your filter here!">',
+        '<input id="property" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="Family Name" placeholder="Type a property name here!">' +
+        `<input id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="property.name.category=='Doors'" placeholder="Type your filter here!">`,
       focusConfirm: false,
       preConfirm: () => {
         return [
@@ -87,6 +87,8 @@ window.addEventListener("load", async () => {
       console.log(e);
     }
     waitScreen.close();
+    if (!successfull)
+      showToast('Error! Please check console!');
     enableAddButtons();
     console.log(`Property ${formValues[0]} selected!`);
     console.log(`filter ${formValues[1]} applied!`);
@@ -98,8 +100,8 @@ window.addEventListener("load", async () => {
     const { value: formValues } = await Swal.fire({
       title: 'Add property-based table',
       html:
-        '<input id="properties" class="swal2-input" placeholder="Type comma-separated properties names here!">' +
-        '<input id="filter" class="swal2-input" placeholder="Type your filter here!">',
+        '<input id="properties" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="Family Name,Element Name" placeholder="Type comma-separated properties names here!">' +
+        `<input id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="property.name.category=='Doors'" placeholder="Type your filter here!">`,
       focusConfirm: false,
       preConfirm: () => {
         return [
