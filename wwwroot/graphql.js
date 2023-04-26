@@ -108,6 +108,72 @@ export async function getProjectElementsPropertyPaginated(projectId, filter, pro
   return respJSON;
 }
 
+export async function getProjectElementsProperties(projectId, filter, propertiesNames) {
+  let token = await (await fetch('/api/auth/token')).json();
+  let jsonBody = {
+    query: `query getProjectElementsProperties {
+      elementsByProject(projectId: "${projectId}", filter:{query:"${filter}"}) {
+        pagination{cursor}
+        results{
+          name
+          properties(filter:{names:["${propertiesNames.replaceAll(',', '","')}"]}){
+            results{
+              value
+              name
+            }
+          }
+        }
+      }
+    }`,
+    variables: undefined,
+    operationName: "getProjectElementsProperties"
+  }
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token.access_token
+    },
+    body: JSON.stringify(jsonBody)
+  };
+  let resp = await fetch(graphql_url, options);
+  let respJSON = await resp.json();
+  return respJSON;
+}
+
+export async function getProjectElementsPropertiesPaginated(projectId, filter, propertiesNames, cursor) {
+  let token = await (await fetch('/api/auth/token')).json();
+  let jsonBody = {
+    query: `query getProjectElementsProperties {
+      elementsByProject(projectId: "${projectId}", filter:{query:"${filter}"}, pagination:{cursor:"${cursor}"}) {
+        pagination{cursor}
+        results{
+          name
+          properties(filter:{names:["${propertiesNames.replaceAll(',', '","')}"]}){
+            results{
+              value
+              name
+            }
+          }
+        }
+      }
+    }`,
+    variables: undefined,
+    operationName: "getProjectElementsProperties"
+  }
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token.access_token
+    },
+    body: JSON.stringify(jsonBody)
+  };
+  let resp = await fetch(graphql_url, options);
+  let respJSON = await resp.json();
+  return respJSON;
+}
+
 // export async function getProjectProperties(projectId, cursor) {
 //   let token = await (await fetch('/api/auth/token')).json();
 //   let jsonBody = {

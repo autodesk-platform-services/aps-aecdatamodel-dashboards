@@ -1,8 +1,8 @@
-﻿import { getHubs, getProjects, getProjectElementsProperty, getProjectElementsPropertyPaginated } from './graphql.js';
+﻿import { getHubs, getProjects, getProjectElementsProperty, getProjectElementsPropertyPaginated, getProjectElementsProperties, getProjectElementsPropertiesPaginated } from './graphql.js';
 
 const autocolors = window['chartjs-plugin-autocolors'];
 
-window.propertiesNames = [];
+var GLOBAL_TABLES_COUNT = 0;
 
 window.addEventListener("load", async () => {
   const login = document.getElementById('login');
@@ -54,31 +54,86 @@ window.addEventListener("load", async () => {
     });
 
     disableAddButtons();
-    let respJSON = await getProjectElementsProperty(document.getElementById('projectsdropdown').value, formValues[1], formValues[0])
-    let cursor = respJSON.data.elementsByProject.pagination.cursor;
-    let chartData = {};
-    for (const result of respJSON.data.elementsByProject.results) {
-      if (!chartData[result.properties.results[0].value])
-        chartData[result.properties.results[0].value] = 0
-      chartData[result.properties.results[0].value]++
-    }
-    while (!!cursor) {
-      let newRespJSON = await getProjectElementsPropertyPaginated(document.getElementById('projectsdropdown').value, formValues[1], formValues[0], cursor)
-      cursor = newRespJSON.data.elementsByProject.pagination.cursor;
-      for (const result of newRespJSON.data.elementsByProject.results) {
+
+    try {
+      let respJSON = await getProjectElementsProperty(document.getElementById('projectsdropdown').value, formValues[1], formValues[0])
+      let cursor = respJSON.data.elementsByProject.pagination.cursor;
+      let chartData = {};
+      for (const result of respJSON.data.elementsByProject.results) {
         if (!chartData[result.properties.results[0].value])
           chartData[result.properties.results[0].value] = 0
         chartData[result.properties.results[0].value]++
       }
+      while (!!cursor) {
+        let newRespJSON = await getProjectElementsPropertyPaginated(document.getElementById('projectsdropdown').value, formValues[1], formValues[0], cursor)
+        cursor = newRespJSON.data.elementsByProject.pagination.cursor;
+        for (const result of newRespJSON.data.elementsByProject.results) {
+          if (!chartData[result.properties.results[0].value])
+            chartData[result.properties.results[0].value] = 0
+          chartData[result.properties.results[0].value]++
+        }
+      }
+      createChart(formValues[0], chartData);
+    }
+    catch (e) {
+      console.log(e);
     }
 
     enableAddButtons();
     console.log(`Property ${formValues[0]} selected!`);
     console.log(`filter ${formValues[1]} applied!`);
-
-    createChart(formValues[0], chartData);
   };
 
+  const addTableButton = document.getElementById('addtable');
+  addTableButton.onclick = async () => {
+    //Swal to specifi parameter to obtain and filter to generate the chart
+    const { value: formValues } = await Swal.fire({
+      title: 'Add property-based table',
+      html:
+        '<input id="properties" class="swal2-input" placeholder="Type comma-separated properties names here!">' +
+        '<input id="filter" class="swal2-input" placeholder="Type your filter here!">',
+      focusConfirm: false,
+      preConfirm: () => {
+        return [
+          document.getElementById('properties').value,
+          document.getElementById('filter').value
+        ]
+      }
+    });
+
+    disableAddButtons();
+    try {
+      let respJSON = await getProjectElementsProperties(document.getElementById('projectsdropdown').value, formValues[1], formValues[0])
+      let cursor = respJSON.data.elementsByProject.pagination.cursor;
+      let tableData = [];
+      for (const result of respJSON.data.elementsByProject.results) {
+        let newObj = {};
+        for (const property of formValues[0].split(',')) {
+          newObj[property] = result.properties.results.find(p => p.name = property).value;
+        }
+        tableData.push(newObj)
+      }
+      while (!!cursor) {
+        let newRespJSON = await getProjectElementsPropertiesPaginated(document.getElementById('projectsdropdown').value, formValues[1], formValues[0], cursor)
+        cursor = newRespJSON.data.elementsByProject.pagination.cursor;
+        for (const result of newRespJSON.data.elementsByProject.results) {
+          let newObj = {};
+          for (const property of formValues[0].split(',')) {
+            newObj[property] = result.properties.results.find(p => p.name = property).value;
+          }
+          tableData.push(newObj)
+        }
+      }
+      createTable(tableData);
+    }
+    catch (e) {
+      console.log(e);
+    }
+
+    enableAddButtons();
+    console.log(`Property ${formValues[0]} selected!`);
+    console.log(`filter ${formValues[1]} applied!`);
+  };
 
   try {
     const resp = await fetch('/api/auth/profile');
@@ -96,6 +151,41 @@ window.addEventListener("load", async () => {
     console.error(err);
   }
 });
+
+async function createTable(tableData) {
+  const dashboardsContainer = document.getElementById('aeccim-dashboards');
+  let tableDiv = document.createElement("div");
+  tableDiv.className = "chartDiv draggable";
+
+  let closebutton = document.createElement('span');
+  closebutton.id = 'close';
+  closebutton.onclick = function () {
+    this.parentNode.remove();
+    return false;
+  };
+  closebutton.innerHTML = 'X';
+  tableDiv.appendChild(closebutton);
+
+  let movebutton = document.createElement('span');
+  movebutton.id = 'move';
+  movebutton.className = 'draggable-handle';
+  movebutton.innerHTML = 'M';
+  tableDiv.appendChild(movebutton);
+  //Create div for the table
+  let tableInnerDiv = document.createElement("div");
+  tableInnerDiv.className = "tablediv";
+  let tableId = 'table' + GLOBAL_TABLES_COUNT;
+  GLOBAL_TABLES_COUNT++;
+  tableInnerDiv.id = tableId;
+  tableDiv.appendChild(tableInnerDiv);
+  dashboardsContainer.appendChild(tableDiv);
+  var table = new Tabulator(`#${tableId}`, {
+    data: tableData, //assign data to table
+    height: 205,
+    layout: 'fitColumns',
+    autoColumns: true, //create columns from data field names
+  });
+}
 
 async function createChart(chartLabel, chartData) {
 
@@ -194,8 +284,6 @@ async function showToast(message) {
     showConfirmButton: false
   })
 }
-
-
 
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
