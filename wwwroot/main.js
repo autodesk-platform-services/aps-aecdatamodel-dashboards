@@ -1,4 +1,4 @@
-﻿import { getHubs, getProjects, getDesignElements, getProjectProperties} from './graphql.js';
+﻿import { getHubs, getProjects, getProjectElementsProperty, getProjectElementsPropertyPaginated } from './graphql.js';
 
 const autocolors = window['chartjs-plugin-autocolors'];
 
@@ -27,12 +27,6 @@ window.addEventListener("load", async () => {
       projectOption.value = project.id;
       projectsDropDown.appendChild(projectOption);
     }
-    setInterval(async () => {
-      if (propertiesNames.length == 0) {
-        let selectedProjectProperties = await getProjectProperties(projectsDropDown.value);
-        propertiesNames = selectedProjectProperties.map(p => p.name);
-      }
-    }, 3000)
   };
 
   projectsDropDown.onchange = async () => {
@@ -44,18 +38,45 @@ window.addEventListener("load", async () => {
 
   const addChartButton = document.getElementById('addchart');
   addChartButton.onclick = async () => {
-    //Swal to specify filter and parameter to search
-    const { parameter: fruit } = await Swal.fire({
-      title: 'Select field validation',
-      input: 'select',
-      inputOptions: propertiesNames,
-      inputPlaceholder: 'Select a parameter to build the chart',
-      showCancelButton: true
-    })
+    //Swal to specifi parameter to obtain and filter to generate the chart
+    const { value: formValues } = await Swal.fire({
+      title: 'Add property-based chart',
+      html:
+        '<input id="property" class="swal2-input" placeholder="Type a property name here!">' +
+        '<input id="filter" class="swal2-input" placeholder="Type your filter here!">',
+      focusConfirm: false,
+      preConfirm: () => {
+        return [
+          document.getElementById('property').value,
+          document.getElementById('filter').value
+        ]
+      }
+    });
 
-    console.log(`Parameter ${parameter} selected!`)
-    
-    createChart(filter, parameter);
+    disableAddButtons();
+    let respJSON = await getProjectElementsProperty(document.getElementById('projectsdropdown').value, formValues[1], formValues[0])
+    let cursor = respJSON.data.elementsByProject.pagination.cursor;
+    let chartData = {};
+    for (const result of respJSON.data.elementsByProject.results) {
+      if (!chartData[result.properties.results[0].value])
+        chartData[result.properties.results[0].value] = 0
+      chartData[result.properties.results[0].value]++
+    }
+    while (!!cursor) {
+      let newRespJSON = await getProjectElementsPropertyPaginated(document.getElementById('projectsdropdown').value, formValues[1], formValues[0], cursor)
+      cursor = newRespJSON.data.elementsByProject.pagination.cursor;
+      for (const result of newRespJSON.data.elementsByProject.results) {
+        if (!chartData[result.properties.results[0].value])
+          chartData[result.properties.results[0].value] = 0
+        chartData[result.properties.results[0].value]++
+      }
+    }
+
+    enableAddButtons();
+    console.log(`Property ${formValues[0]} selected!`);
+    console.log(`filter ${formValues[1]} applied!`);
+
+    createChart(formValues[0], chartData);
   };
 
 
@@ -76,7 +97,7 @@ window.addEventListener("load", async () => {
   }
 });
 
-async function createChart(filter, parameter) {
+async function createChart(chartLabel, chartData) {
 
   const dashboardsContainer = document.getElementById('aeccim-dashboards');
   let chartDiv = document.createElement("div");
@@ -107,11 +128,11 @@ async function createChart(filter, parameter) {
     {
       type: 'pie',
       data: {
-        labels: [],
+        labels: Object.keys(chartData),
         datasets: [
           {
-            label: `${parameter}`,
-            data: [],
+            label: `${chartLabel}`,
+            data: Object.values(chartData),
             //backgroundColor:,
             hoverOffset: 4
           }
@@ -123,36 +144,29 @@ async function createChart(filter, parameter) {
       options: {
         plugins: {
           autocolors: {
-            mode: 'label'
+            mode: 'data'
           }
         }
       }
     }
   );
-  let chartId = uuidv4();
-  GLOBAL_CHARTS[chartId] = newChart;
-
-  let designsElements = [];
-
-  let designElementsResponse = await getDesignElements(hubsDropDown.value, projectsDropDown.value, chartId);
-  designElementsResponse.elements.results.length > 0 ? designsDoors.push(...designsElements.elements.results) : null;
-
-  let elements = {};
-  for (const designElement of designsElements) {
-    let elementParameter = designElement.properties.results.find(t => t.name == parameter);
-    if (!Object.keys(elements).includes(elementParameter.value)) {
-      elements[elementParameter.value] = 0;
-    }
-    elements[elementParameter.value]++
-  }
-  updateChart(chartId, elements, filter, parameter);
 }
 
-function updateChart(chartId, elements, filter, parameter) {
-
+function enableAddButtons() {
+  document.querySelector('#addchart').disabled = false;
+  document.querySelector('#addtable').disabled = false;
+  document.querySelector('#projectsdropdown').disabled = false;
+  document.querySelector('#hubsdropdown').disabled = false;
 }
 
-function prepareSwapFlexbox () {
+function disableAddButtons() {
+  document.querySelector('#addchart').disabled = true;
+  document.querySelector('#addtable').disabled = true;
+  document.querySelector('#projectsdropdown').disabled = true;
+  document.querySelector('#hubsdropdown').disabled = true;
+}
+
+function prepareSwapFlexbox() {
   const containers = document.querySelectorAll('#aeccim-dashboards');
 
   if (containers.length === 0) {

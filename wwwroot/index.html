@@ -9,32 +9,29 @@
   <link rel="stylesheet" href="main.css" />
   <!-- This link will always fetch the latest version of Balloon.css -->
   <link rel="stylesheet" href="https://unpkg.com/balloon-css/balloon.min.css" />
+  <link rel="stylesheet" href="'https://unpkg.com/tabulator-tables@4.9.3/dist/css/tabulator.min.css">
 </head>
 
 <body>
   <div id="header">
     <img class="logo" src="https://cdn.autodesk.io/logo/black/stacked.png" alt="Autodesk Platform Services">
     <span class="title">AEC Cloud Information Dashboards - BETA</span>
-    <div id="hubinput" data-balloon-length="fit" aria-label="Choose your hub id here"
-         data-balloon-pos="down">
+    <div id="hubinput" data-balloon-length="fit" aria-label="Choose your hub id here" data-balloon-pos="down">
       <select class="dropdowns" name="state" id="hubsdropdown">
       </select>
     </div>
-    <div id="projectinput" data-balloon-length="fit" aria-label="Choose your project id here"
-         data-balloon-pos="down">
+    <div id="projectinput" data-balloon-length="fit" aria-label="Choose your project id here" data-balloon-pos="down">
       <select class="dropdowns" name="state" id="projectsdropdown">
       </select>
     </div>
-    <button id="addchart" data-balloon-length="fit" aria-label="Add Chart!"
-            data-balloon-pos="down">
+    <button id="addchart" data-balloon-length="fit" aria-label="Add Chart!" data-balloon-pos="down">
       Add Chart
     </button>
-    <button id="addtable" data-balloon-length="fit" aria-label="Add Table!"
-            data-balloon-pos="down">
+    <button id="addtable" data-balloon-length="fit" aria-label="Add Table!" data-balloon-pos="down">
       Add Table
     </button>
     <button id="login" style="visibility: hidden;" data-balloon-length="fit" aria-label="Login Here!"
-            data-balloon-pos="down">
+      data-balloon-pos="down">
       Login
     </button>
   </div>
@@ -48,6 +45,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@shopify/draggable@1.0.0-beta.11/lib/swappable.js"></script>
   <!-- Plugins only -->
   <script src="https://cdn.jsdelivr.net/npm/@shopify/draggable@1.0.0-beta.11/lib/plugins.js"></script>
+  <!-- Tabulator for tables -->
+  <script src="https://unpkg.com/tabulator-tables@4.9.3/dist/js/tabulator.min.js"></script>
   <script src="./main.js" type="module"></script>
   <script src="./graphql.js" type="module"></script>
 </body>

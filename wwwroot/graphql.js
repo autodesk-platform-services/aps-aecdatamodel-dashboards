@@ -42,28 +42,26 @@ export async function getProjects(hubId) {
   return respJSON;
 }
 
-export async function getProjectProperties(projectId, cursor) {
+export async function getProjectElementsProperty(projectId, filter, propertyName) {
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {
-    query: `query GetProjectProperties {
-  project(projectId: "${projectId}") {
-    name
-		aecDesigns{
-			pagination{cursor}
-			results{
-				propertyDefinitions{
-					pagination{cursor}
-					results{
-						name
-					}
-				}
-			}
-		}
-  }
-}`,
+    query: `query getProjectElementsProperty {
+      elementsByProject(projectId: "${projectId}", filter:{query:"${filter}"}) {
+        pagination{cursor}
+        results{
+          name
+          properties(filter:{names:"${propertyName}"}){
+            results{
+              value
+              name
+            }
+          }
+        }
+      }
+    }`,
     variables: undefined,
-    operationName: "GetProjectProperties"
-  };
+    operationName: "getProjectElementsProperty"
+  }
   const options = {
     method: 'POST',
     headers: {
@@ -72,42 +70,31 @@ export async function getProjectProperties(projectId, cursor) {
     },
     body: JSON.stringify(jsonBody)
   };
-
-  disableAddButtons();
-
   let resp = await fetch(graphql_url, options);
   let respJSON = await resp.json();
-  if (!!respJSON.data.project.aecDesigns.results[0].propertyDefinitions.pagination.cursor) {
-    getPaginatedProperties(projectId, respJSON.data.project.aecDesigns.results[0].propertyDefinitions.pagination.cursor)
-  }
-  else {
-    enableAddButtons();
-  }
-  return respJSON.data.project.aecDesigns.results[0].propertyDefinitions.results;
+  return respJSON;
 }
 
-async function getPaginatedProperties(projectId, cursor) {
+export async function getProjectElementsPropertyPaginated(projectId, filter, propertyName, cursor) {
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {
-    query: `query GetProjectProperties {
-  project(projectId: "${projectId}") {
-    name
-		aecDesigns{
-			pagination{cursor}
-			results{
-				propertyDefinitions(pagination:{cursor:"${cursor}"}){
-					pagination{cursor}
-					results{
-						name
-					}
-				}
-			}
-		}
-  }
-}`,
+    query: `query getProjectElementsProperty {
+      elementsByProject(projectId: "${projectId}", filter:{query:"${filter}"}, pagination:{cursor:"${cursor}"}) {
+        pagination{cursor}
+        results{
+          name
+          properties(filter:{names:"${propertyName}"}){
+            results{
+              value
+              name
+            }
+          }
+        }
+      }
+    }`,
     variables: undefined,
-    operationName: "GetProjectProperties"
-  };
+    operationName: "getProjectElementsProperty"
+  }
   const options = {
     method: 'POST',
     headers: {
@@ -116,32 +103,93 @@ async function getPaginatedProperties(projectId, cursor) {
     },
     body: JSON.stringify(jsonBody)
   };
-
   let resp = await fetch(graphql_url, options);
   let respJSON = await resp.json();
-  if (!!respJSON.data.project.aecDesigns.results[0].propertyDefinitions.pagination.cursor) {
-    getPaginatedProperties(projectId, respJSON.data.project.aecDesigns.results[0].propertyDefinitions.pagination.cursor)
-  }
-  else {
-    enableAddButtons();
-  }
-  propertiesNames.push(...respJSON.data.project.aecDesigns.results[0].propertyDefinitions.results.map(p => p.name));
+  return respJSON;
 }
 
-function enableAddButtons(){
-  document.querySelector('#addchart').disabled = false;
-  document.querySelector('#addtable').disabled = false;
-  document.querySelector('#projectsdropdown').disabled = false;
-  document.querySelector('#hubsdropdown').disabled = false;
-}
+// export async function getProjectProperties(projectId, cursor) {
+//   let token = await (await fetch('/api/auth/token')).json();
+//   let jsonBody = {
+//     query: `query GetProjectProperties {
+//   project(projectId: "${projectId}") {
+//     name
+// 		aecDesigns{
+// 			pagination{cursor}
+// 			results{
+// 				propertyDefinitions{
+// 					pagination{cursor}
+// 					results{
+// 						name
+// 					}
+// 				}
+// 			}
+// 		}
+//   }
+// }`,
+//     variables: undefined,
+//     operationName: "GetProjectProperties"
+//   };
+//   const options = {
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//       Authorization: 'Bearer ' + token.access_token
+//     },
+//     body: JSON.stringify(jsonBody)
+//   };
 
-function disableAddButtons(){
-  document.querySelector('#addchart').disabled = true;
-  document.querySelector('#addtable').disabled = true;
-  document.querySelector('#projectsdropdown').disabled = true;
-  document.querySelector('#hubsdropdown').disabled = true;
-}
+//   disableAddButtons();
 
-export async function getDesignElements() {
-  return '';
-}
+//   let resp = await fetch(graphql_url, options);
+//   let respJSON = await resp.json();
+//   if (!!respJSON.data.project.aecDesigns.results[0].propertyDefinitions.pagination.cursor) {
+//     getPaginatedProperties(projectId, respJSON.data.project.aecDesigns.results[0].propertyDefinitions.pagination.cursor)
+//   }
+//   else {
+//     enableAddButtons();
+//   }
+//   return respJSON.data.project.aecDesigns.results[0].propertyDefinitions.results;
+// }
+
+// async function getPaginatedProperties(projectId, cursor) {
+//   let token = await (await fetch('/api/auth/token')).json();
+//   let jsonBody = {
+//     query: `query GetProjectProperties {
+//   project(projectId: "${projectId}") {
+//     name
+// 		aecDesigns{
+// 			pagination{cursor}
+// 			results{
+// 				propertyDefinitions(pagination:{cursor:"${cursor}"}){
+// 					pagination{cursor}
+// 					results{
+// 						name
+// 					}
+// 				}
+// 			}
+// 		}
+//   }
+// }`,
+//     variables: undefined,
+//     operationName: "GetProjectProperties"
+//   };
+//   const options = {
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//       Authorization: 'Bearer ' + token.access_token
+//     },
+//     body: JSON.stringify(jsonBody)
+//   };
+
+//   let resp = await fetch(graphql_url, options);
+//   let respJSON = await resp.json();
+//   if (!!respJSON.data.project.aecDesigns.results[0].propertyDefinitions.pagination.cursor) {
+//     getPaginatedProperties(projectId, respJSON.data.project.aecDesigns.results[0].propertyDefinitions.pagination.cursor)
+//   }
+//   else {
+//     enableAddButtons();
+//   }
+//   propertiesNames.push(...respJSON.data.project.aecDesigns.results[0].propertyDefinitions.results.map(p => p.name));
+// }
