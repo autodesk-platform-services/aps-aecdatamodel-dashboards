@@ -54,7 +54,14 @@ window.addEventListener("load", async () => {
     });
 
     disableAddButtons();
-
+    let waitScreen = Swal.fire({
+      title: 'Please Wait !',
+      html: 'loading data',// add html attribute if you want or remove
+      allowOutsideClick: false,
+      showCancelButton: false,
+      showConfirmButton: false
+    });
+    let successfull = true;
     try {
       let respJSON = await getProjectElementsProperty(document.getElementById('projectsdropdown').value, formValues[1], formValues[0])
       let cursor = respJSON.data.elementsByProject.pagination.cursor;
@@ -76,9 +83,10 @@ window.addEventListener("load", async () => {
       createChart(formValues[0], chartData);
     }
     catch (e) {
+      successfull = false;
       console.log(e);
     }
-
+    waitScreen.close();
     enableAddButtons();
     console.log(`Property ${formValues[0]} selected!`);
     console.log(`filter ${formValues[1]} applied!`);
@@ -102,6 +110,14 @@ window.addEventListener("load", async () => {
     });
 
     disableAddButtons();
+    let waitScreen = Swal.fire({
+      title: 'Please Wait!',
+      html: 'loading data',// add html attribute if you want or remove
+      allowOutsideClick: false,
+      showCancelButton: false,
+      showConfirmButton: false
+    });
+    let successfull = true;
     try {
       let respJSON = await getProjectElementsProperties(document.getElementById('projectsdropdown').value, formValues[1], formValues[0])
       let cursor = respJSON.data.elementsByProject.pagination.cursor;
@@ -127,10 +143,15 @@ window.addEventListener("load", async () => {
       createTable(tableData);
     }
     catch (e) {
+      successfull = false;
       console.log(e);
     }
-
+    waitScreen.close();
+    if (!successfull)
+      showToast('Error! Please check console!');
     enableAddButtons();
+    if (!successfull)
+      showToast('Error! Please check console!');
     console.log(`Property ${formValues[0]} selected!`);
     console.log(`filter ${formValues[1]} applied!`);
   };
@@ -181,7 +202,6 @@ async function createTable(tableData) {
   dashboardsContainer.appendChild(tableDiv);
   var table = new Tabulator(`#${tableId}`, {
     data: tableData, //assign data to table
-    height: 205,
     layout: 'fitColumns',
     autoColumns: true, //create columns from data field names
   });
