@@ -194,6 +194,16 @@ async function createTable(tableData) {
   movebutton.className = 'draggable-handle';
   movebutton.innerHTML = 'M';
   tableDiv.appendChild(movebutton);
+
+  let tabletitle = document.createElement('span');
+  tabletitle.id = 'title';
+  tabletitle.className = 'draggable-handle';
+  tabletitle.innerHTML = chartLabel;
+  tabletitle.onclick = (event) => {
+    changeDivTitle(event);
+  };
+  tableDiv.appendChild(tabletitle);
+
   //Create div for the table
   let tableInnerDiv = document.createElement("div");
   tableInnerDiv.className = "tablediv";
@@ -230,6 +240,15 @@ async function createChart(chartLabel, chartData) {
   movebutton.innerHTML = 'M';
   chartDiv.appendChild(movebutton);
 
+  let charttitle = document.createElement('span');
+  charttitle.id = 'title';
+  charttitle.className = 'draggable-handle';
+  charttitle.innerHTML = chartLabel;
+  charttitle.onclick = (event) => {
+    changeDivTitle(event);
+  };
+  chartDiv.appendChild(charttitle);
+
   //Create canvas inside div
   let chartCanvas = document.createElement("canvas");
   chartCanvas.className = "chartcanvas";
@@ -262,6 +281,13 @@ async function createChart(chartLabel, chartData) {
       }
     }
   );
+}
+
+function changeDivTitle(event) {
+  let newTitle = prompt("Please enter the new title", "Chart/Table Title");
+  if (newTitle != null) {
+    event.target.innerHTML = newTitle;
+  }
 }
 
 function enableAddButtons() {

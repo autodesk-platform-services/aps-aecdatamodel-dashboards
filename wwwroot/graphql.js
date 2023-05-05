@@ -1,4 +1,4 @@
-﻿let graphql_url = 'https://developer-stg.api.autodesk.com/aeccloudinformationmodel/2022-11/graphql';
+﻿let graphql_url = 'https://developer.api.autodesk.com/aeccloudinformationmodel/2022-11/graphql';
 
 export async function getHubs() {
   let token = await (await fetch('/api/auth/token')).json();
