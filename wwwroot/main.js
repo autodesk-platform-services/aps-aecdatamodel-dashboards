@@ -42,8 +42,11 @@ window.addEventListener("load", async () => {
     const { value: formValues } = await Swal.fire({
       title: 'Add property-based chart',
       html:
-        '<input id="property" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="Family Name" placeholder="Type a property name here!">' +
-        `<input id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="property.name.category=='Doors'" placeholder="Type your filter here!">`,
+        '<input type="text" id="property" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="Family Name" placeholder="Type a property name here!" list="querypropertiesList" novalidate>' +
+        `<input type="text" id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="property.name.category=='Doors'" placeholder="Type your filter here!" list="queryfiltersList" novalidate>`,
+      // html:
+      //   '<input id="property" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="Family Name" placeholder="Type a property name here!">' +
+      //   `<input id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="property.name.category=='Doors'" placeholder="Type your filter here!">`,
       focusConfirm: false,
       preConfirm: () => {
         return [
@@ -80,7 +83,13 @@ window.addEventListener("load", async () => {
           chartData[result.properties.results[0].value]++
         }
       }
-      createChart(formValues[0], chartData);
+      if (Object.keys(chartData).length > 0) {
+        createChart(formValues[0], chartData);
+      }
+      else {
+        console.log(`${chartData.length} elements found!`);
+        successfull = false;
+      }
     }
     catch (e) {
       successfull = false;
@@ -100,8 +109,11 @@ window.addEventListener("load", async () => {
     const { value: formValues } = await Swal.fire({
       title: 'Add property-based table',
       html:
-        '<input id="properties" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="Family Name,Element Name" placeholder="Type comma-separated properties names here!">' +
-        `<input id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="property.name.category=='Doors'" placeholder="Type your filter here!">`,
+        '<input type="email" id="properties" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="Family Name,Element Name" placeholder="Type comma-separated properties names here!" list="querypropertiesList" multiple novalidate>' +
+        `<input type="text" id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Type your filter here!" list="queryfiltersList">`,
+      // html:
+      //   '<input id="properties" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="Family Name,Element Name" placeholder="Type comma-separated properties names here!">' +
+      //   `<input id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="property.name.category=='Doors'" placeholder="Type your filter here!">`,
       focusConfirm: false,
       preConfirm: () => {
         return [
@@ -127,7 +139,8 @@ window.addEventListener("load", async () => {
       for (const result of respJSON.data.elementsByProject.results) {
         let newObj = {};
         for (const property of formValues[0].split(',')) {
-          newObj[property] = result.properties.results.find(p => p.name = property).value;
+          let newProp = result.properties.results.find(p => p.name == property);
+          newObj[property] = newProp ? newProp.value : "";
         }
         tableData.push(newObj)
       }
@@ -137,12 +150,20 @@ window.addEventListener("load", async () => {
         for (const result of newRespJSON.data.elementsByProject.results) {
           let newObj = {};
           for (const property of formValues[0].split(',')) {
-            newObj[property] = result.properties.results.find(p => p.name = property).value;
+            let newProp = result.properties.results.find(p => p.name == property);
+            newObj[property] = newProp ? newProp.value : "";
           }
           tableData.push(newObj)
         }
       }
-      createTable(tableData);
+      if (tableData.length > 0) {
+        createTable(formValues[0], tableData);
+      }
+      else {
+        console.log(`${tableData.length} elements found!`);
+        successfull = false;
+      }
+
     }
     catch (e) {
       successfull = false;
@@ -175,7 +196,7 @@ window.addEventListener("load", async () => {
   }
 });
 
-async function createTable(tableData) {
+async function createTable(tableLabel, tableData) {
   const dashboardsContainer = document.getElementById('aeccim-dashboards');
   let tableDiv = document.createElement("div");
   tableDiv.className = "chartDiv draggable";
@@ -197,8 +218,7 @@ async function createTable(tableData) {
 
   let tabletitle = document.createElement('span');
   tabletitle.id = 'title';
-  tabletitle.className = 'draggable-handle';
-  tabletitle.innerHTML = chartLabel;
+  tabletitle.innerHTML = tableLabel;
   tabletitle.onclick = (event) => {
     changeDivTitle(event);
   };
@@ -216,6 +236,16 @@ async function createTable(tableData) {
     data: tableData, //assign data to table
     layout: 'fitColumns',
     autoColumns: true, //create columns from data field names
+  });
+  table.on("headerDblClick", function (e, column) {
+    var groups = table.getGroups();
+    if (groups.length > 0 && groups[0].getField() == column._column.field) {
+      groups = [];
+    }
+    else {
+      groups = [column._column.field];
+    }
+    table.setGroupBy(groups);
   });
 }
 
@@ -242,7 +272,6 @@ async function createChart(chartLabel, chartData) {
 
   let charttitle = document.createElement('span');
   charttitle.id = 'title';
-  charttitle.className = 'draggable-handle';
   charttitle.innerHTML = chartLabel;
   charttitle.onclick = (event) => {
     changeDivTitle(event);

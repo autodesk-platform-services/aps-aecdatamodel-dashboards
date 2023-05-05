@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>AEC Cloud Information Model Dashboards- BETA</title>
+  <title>AEC Data Model Dashboards- BETA</title>
   <meta charset="utf-8" />
   <link rel="shortcut icon" href="http://cdn.autodesk.io/favicon.ico">
   <link rel="mask-icon" href="http://cdn.autodesk.io/favicon.ico">
@@ -15,7 +15,7 @@
 <body>
   <div id="header">
     <img class="logo" src="https://cdn.autodesk.io/logo/black/stacked.png" alt="Autodesk Platform Services">
-    <span class="title">AEC Cloud Information Dashboards - BETA</span>
+    <span class="title">AEC Data Model Dashboards - BETA</span>
     <div id="hubinput" data-balloon-length="fit" aria-label="Choose your hub id here" data-balloon-pos="down">
       <select class="dropdowns" name="state" id="hubsdropdown">
       </select>
@@ -49,6 +49,27 @@
   <script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js"></script>
   <script src="./main.js" type="module"></script>
   <script src="./graphql.js" type="module"></script>
+  <!-- Data Lists for AEC options-->
+  <datalist id="queryfiltersList">
+    <option value="property.name.family=='Basic Walls'">property.name.family==’Basic Walls’</option>
+    <option value="property.name.category=='Doors and Windows'">property.name.category==’Doors and windows’</option>
+    <option value="metadata.createdOn>=2020-01-20T14:00:00Z and metadata.createdOn<2020-12-20T14:00:00Z>">
+      metadata.createdOn>=2020-01-20T14:00:00Z and metadata.createdOn</option>
+    <option value="metadata.createdBy.email== example@autodesk.com">metadata.createdBy.email== example@autodesk.com
+    </option>
+    <option value="property.name.area >= 100 and property.name.area<200">property.name.area >= 100 and
+      property.name.area<200 </option>
+    <option value="property.name=startsWith=awv">property.name=startsWith=awv”</option>
+    <option value="property.name.Element Name’=startsWith=Fire">property.name.Element Name’=startsWith=Fire</option>
+  </datalist>
+  <datalist id="querypropertiesList">
+    <option value="Family Name">Family Name</option>
+    <option value="Element Name">Element Name</option>
+    <option value="Width">Width</option>
+    <option value="Length">Length</option>
+    <option value="Area">Area</option>
+    <option value="Offset">Offset</option>
+  </datalist>
 </body>
 
 </html>

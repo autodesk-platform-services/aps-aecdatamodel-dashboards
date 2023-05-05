@@ -73,3 +73,7 @@
 .swal2-input{
   display: block;
 }
+
+#move{
+  cursor: move;
+}
