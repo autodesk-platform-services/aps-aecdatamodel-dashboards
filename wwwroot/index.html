@@ -30,6 +30,9 @@
     <button id="addtable" data-balloon-length="fit" aria-label="Add Table!" data-balloon-pos="down">
       Add Table
     </button>
+    <button id="comparedesigns" data-balloon-length="fit" aria-label="Add Comparision chart!" data-balloon-pos="down">
+      Compare Designs
+    </button>
     <button id="login" style="visibility: hidden;" data-balloon-length="fit" aria-label="Login Here!"
       data-balloon-pos="down">
       Login
@@ -52,7 +55,8 @@
   <!-- Data Lists for AEC options-->
   <datalist id="queryfiltersList">
     <option value="property.name.family=='Basic Walls'">property.name.family==’Basic Walls’</option>
-    <option value="property.name.category=='Doors and Windows'">property.name.category==’Doors and windows’</option>
+    <option value="property.name.category=='Doors' or property.name.category=='Windows'">property.name.category==’Doors
+      or Windows’</option>
     <option value="metadata.createdOn>=2020-01-20T14:00:00Z and metadata.createdOn<2020-12-20T14:00:00Z>">
       metadata.createdOn>=2020-01-20T14:00:00Z and metadata.createdOn</option>
     <option value="metadata.createdBy.email== example@autodesk.com">metadata.createdBy.email== example@autodesk.com
@@ -70,6 +74,7 @@
     <option value="Area">Area</option>
     <option value="Offset">Offset</option>
   </datalist>
+  <datalist id="designsList"></datalist>
 </body>
 
 </html>

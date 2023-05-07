@@ -42,6 +42,27 @@ export async function getProjects(hubId) {
   return respJSON;
 }
 
+export async function getProjectDesigns(projectId) {
+  let token = await (await fetch('/api/auth/token')).json();
+  let jsonBody = {
+    query: `query GetProjectDesigns {  aecDesignsByProject(projectId: "${projectId}") {    results {      name     id    }  }}`,
+    variables: undefined,
+    operationName: "GetProjectDesigns"
+  };
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token.access_token
+    },
+    body: JSON.stringify(jsonBody)
+  };
+
+  let resp = await fetch(graphql_url, options);
+  let respJSON = await resp.json();
+  return respJSON;
+}
+
 export async function getProjectElementsProperty(projectId, filter, propertyName) {
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {
@@ -94,6 +115,72 @@ export async function getProjectElementsPropertyPaginated(projectId, filter, pro
     }`,
     variables: undefined,
     operationName: "getProjectElementsProperty"
+  }
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token.access_token
+    },
+    body: JSON.stringify(jsonBody)
+  };
+  let resp = await fetch(graphql_url, options);
+  let respJSON = await resp.json();
+  return respJSON;
+}
+
+export async function getDesignElementsProperty(designId, filter, propertyName) {
+  let token = await (await fetch('/api/auth/token')).json();
+  let jsonBody = {
+    query: `query getDesignElementsProperty {
+      elements(designId: "${designId}", filter:{query:"${filter}"}) {
+        pagination{cursor}
+        results{
+          name
+          properties(filter:{names:"${propertyName}"}){
+            results{
+              value
+              name
+            }
+          }
+        }
+      }
+    }`,
+    variables: undefined,
+    operationName: "getDesignElementsProperty"
+  }
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token.access_token
+    },
+    body: JSON.stringify(jsonBody)
+  };
+  let resp = await fetch(graphql_url, options);
+  let respJSON = await resp.json();
+  return respJSON;
+}
+
+export async function getDesignElementsPropertyPaginated(designId, filter, propertyName, cursor) {
+  let token = await (await fetch('/api/auth/token')).json();
+  let jsonBody = {
+    query: `query getDesignElementsProperty {
+      elements(designId: "${designId}", filter:{query:"${filter}"}, pagination:{cursor:"${cursor}"}) {
+        pagination{cursor}
+        results{
+          name
+          properties(filter:{names:"${propertyName}"}){
+            results{
+              value
+              name
+            }
+          }
+        }
+      }
+    }`,
+    variables: undefined,
+    operationName: "getDesignElementsProperty"
   }
   const options = {
     method: 'POST',
