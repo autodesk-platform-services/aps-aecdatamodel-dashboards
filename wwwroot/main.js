@@ -542,6 +542,7 @@ function enableAddButtons() {
   document.querySelector('#addtable').disabled = false;
   document.querySelector('#projectsdropdown').disabled = false;
   document.querySelector('#hubsdropdown').disabled = false;
+  document.querySelector('#comparedesigns').disabled = false;
 }
 
 function disableAddButtons() {
@@ -549,6 +550,7 @@ function disableAddButtons() {
   document.querySelector('#addtable').disabled = true;
   document.querySelector('#projectsdropdown').disabled = true;
   document.querySelector('#hubsdropdown').disabled = true;
+  document.querySelector('#comparedesigns').disabled = true;
 }
 
 function prepareSwapFlexbox() {
