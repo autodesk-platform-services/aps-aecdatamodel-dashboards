@@ -54,12 +54,13 @@
 
 .tableHeader{
   position: absolute;
+  display: inline-flex;
 }
 
 .tablediv{
   width: 100%;
   height: 100%;
-  margin-top: 1em;
+  margin-top: 2em;
 }
 
 #header .title {
