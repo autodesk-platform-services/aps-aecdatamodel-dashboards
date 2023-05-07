@@ -328,28 +328,34 @@ async function createTable(tableLabel, tableData) {
   let tableDiv = document.createElement("div");
   tableDiv.className = "chartDiv draggable";
 
-  let closebutton = document.createElement('span');
+  let tableHeader = document.createElement('div');
+  tableHeader.className = 'tableHeader';
+  tableDiv.appendChild(tableHeader);
+
+  let closebutton = document.createElement('div');
   closebutton.id = 'close';
   closebutton.onclick = function () {
-    this.parentNode.remove();
+    this.parentNode.parentNode.remove();
     return false;
   };
   closebutton.innerHTML = 'X';
-  tableDiv.appendChild(closebutton);
+  closebutton.className = 'chartheader';
+  tableHeader.appendChild(closebutton);
 
-  let movebutton = document.createElement('span');
+  let movebutton = document.createElement('div');
   movebutton.id = 'move';
-  movebutton.className = 'draggable-handle';
+  movebutton.className = 'draggable-handle chartheader';
   movebutton.innerHTML = 'M';
-  tableDiv.appendChild(movebutton);
+  tableHeader.appendChild(movebutton);
 
-  let tabletitle = document.createElement('span');
+  let tabletitle = document.createElement('div');
   tabletitle.id = 'title';
   tabletitle.innerHTML = tableLabel;
+  tabletitle.className = 'chartheader';
   tabletitle.onclick = (event) => {
     changeDivTitle(event);
   };
-  tableDiv.appendChild(tabletitle);
+  tableHeader.appendChild(tabletitle);
 
   //Create div for the table
   let tableInnerDiv = document.createElement("div");
@@ -382,24 +388,26 @@ async function createChart(chartLabel, chartData, chartType) {
   let chartDiv = document.createElement("div");
   chartDiv.className = "chartDiv draggable";
 
-  let closebutton = document.createElement('span');
+  let closebutton = document.createElement('div');
   closebutton.id = 'close';
   closebutton.onclick = function () {
     this.parentNode.remove();
     return false;
   };
   closebutton.innerHTML = 'X';
+  closebutton.className = 'chartheader';
   chartDiv.appendChild(closebutton);
 
-  let movebutton = document.createElement('span');
+  let movebutton = document.createElement('div');
   movebutton.id = 'move';
-  movebutton.className = 'draggable-handle';
+  movebutton.className = 'draggable-handle chartheader';
   movebutton.innerHTML = 'M';
   chartDiv.appendChild(movebutton);
 
-  let charttitle = document.createElement('span');
+  let charttitle = document.createElement('div');
   charttitle.id = 'title';
   charttitle.innerHTML = chartLabel;
+  charttitle.className = 'chartheader';
   charttitle.onclick = (event) => {
     changeDivTitle(event);
   };
@@ -444,24 +452,30 @@ async function createComparisionChart(designOneId, designTwoId, chartData, chart
   let chartDiv = document.createElement("div");
   chartDiv.className = "chartDiv draggable";
 
-  let closebutton = document.createElement('span');
+  let designsList = document.getElementById('designsList');
+  let designOneName = Array.from(designsList.children).find(n => n.value == designOneId).innerHTML;
+  let designTwoName = Array.from(designsList.children).find(n => n.value == designTwoId).innerHTML;
+
+  let closebutton = document.createElement('div');
   closebutton.id = 'close';
   closebutton.onclick = function () {
     this.parentNode.remove();
     return false;
   };
   closebutton.innerHTML = 'X';
+  closebutton.className = 'chartheader';
   chartDiv.appendChild(closebutton);
 
-  let movebutton = document.createElement('span');
+  let movebutton = document.createElement('div');
   movebutton.id = 'move';
-  movebutton.className = 'draggable-handle';
+  movebutton.className = 'draggable-handle chartheader';
   movebutton.innerHTML = 'M';
   chartDiv.appendChild(movebutton);
 
-  let charttitle = document.createElement('span');
+  let charttitle = document.createElement('div');
   charttitle.id = 'title';
-  charttitle.innerHTML = designOneId + 'x' + designTwoId;
+  charttitle.innerHTML = designOneName + ' x ' + designTwoName;
+  charttitle.className = 'chartheader';
   charttitle.onclick = (event) => {
     changeDivTitle(event);
   };
@@ -482,7 +496,7 @@ async function createComparisionChart(designOneId, designTwoId, chartData, chart
         labels: Object.keys(chartData),
         datasets: [
           {
-            label: designOneId,
+            label: designOneName,
             data: designOneValues,
             fill: true,
             backgroundColor: 'rgba(255, 99, 132, 0.2)',
@@ -493,7 +507,7 @@ async function createComparisionChart(designOneId, designTwoId, chartData, chart
             pointHoverBorderColor: 'rgb(255, 99, 132)'
           },
           {
-            label: designTwoId,
+            label: designTwoName,
             data: designTwoValues,
             fill: true,
             backgroundColor: 'rgba(54, 162, 235, 0.2)',

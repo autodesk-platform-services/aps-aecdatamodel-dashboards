@@ -35,6 +35,12 @@
 .chartcanvas {
   width: 25vh;
   height: 40vh;
+  position: absolute;
+  margin-top: 1em;
+}
+
+.chartheader{
+  margin-right: 5px;
 }
 
 .chartDiv {
@@ -46,9 +52,14 @@
   display: inline-flex;
 }
 
+.tableHeader{
+  position: absolute;
+}
+
 .tablediv{
   width: 100%;
   height: 100%;
+  margin-top: 1em;
 }
 
 #header .title {
