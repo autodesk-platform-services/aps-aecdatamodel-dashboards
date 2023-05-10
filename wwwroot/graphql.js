@@ -16,7 +16,11 @@ export async function getHubs() {
     body: JSON.stringify(jsonBody)
   };
 
+  let timestarted = Date.now();
   let resp = await fetch(graphql_url, options);
+  let timeElapsed = Date.now() - timestarted;
+  console.log(`Query response received after ${timeElapsed} ms`);
+  console.log(jsonBody.query);
   let respJSON = await resp.json();
   return respJSON;
 }
@@ -37,7 +41,11 @@ export async function getProjects(hubId) {
     body: JSON.stringify(jsonBody)
   };
 
+  let timestarted = Date.now();
   let resp = await fetch(graphql_url, options);
+  let timeElapsed = Date.now() - timestarted;
+  console.log(`Query response received after ${timeElapsed} ms`);
+  console.log(jsonBody.query);
   let respJSON = await resp.json();
   return respJSON;
 }
@@ -58,7 +66,11 @@ export async function getProjectDesigns(projectId) {
     body: JSON.stringify(jsonBody)
   };
 
+  let timestarted = Date.now();
   let resp = await fetch(graphql_url, options);
+  let timeElapsed = Date.now() - timestarted;
+  console.log(`Query response received after ${timeElapsed} ms`);
+  console.log(jsonBody.query);
   let respJSON = await resp.json();
   return respJSON;
 }
@@ -91,7 +103,11 @@ export async function getProjectElementsProperty(projectId, filter, propertyName
     },
     body: JSON.stringify(jsonBody)
   };
+  let timestarted = Date.now();
   let resp = await fetch(graphql_url, options);
+  let timeElapsed = Date.now() - timestarted;
+  console.log(`Query response received after ${timeElapsed} ms`);
+  console.log(jsonBody.query);
   let respJSON = await resp.json();
   return respJSON;
 }
@@ -124,7 +140,11 @@ export async function getProjectElementsPropertyPaginated(projectId, filter, pro
     },
     body: JSON.stringify(jsonBody)
   };
+  let timestarted = Date.now();
   let resp = await fetch(graphql_url, options);
+  let timeElapsed = Date.now() - timestarted;
+  console.log(`Query response received after ${timeElapsed} ms`);
+  console.log(jsonBody.query);
   let respJSON = await resp.json();
   return respJSON;
 }
@@ -157,7 +177,11 @@ export async function getDesignElementsProperty(designId, filter, propertyName) 
     },
     body: JSON.stringify(jsonBody)
   };
+  let timestarted = Date.now();
   let resp = await fetch(graphql_url, options);
+  let timeElapsed = Date.now() - timestarted;
+  console.log(`Query response received after ${timeElapsed} ms`);
+  console.log(jsonBody.query);
   let respJSON = await resp.json();
   return respJSON;
 }
@@ -190,7 +214,11 @@ export async function getDesignElementsPropertyPaginated(designId, filter, prope
     },
     body: JSON.stringify(jsonBody)
   };
+  let timestarted = Date.now();
   let resp = await fetch(graphql_url, options);
+  let timeElapsed = Date.now() - timestarted;
+  console.log(`Query response received after ${timeElapsed} ms`);
+  console.log(jsonBody.query);
   let respJSON = await resp.json();
   return respJSON;
 }
@@ -223,7 +251,11 @@ export async function getProjectElementsProperties(projectId, filter, properties
     },
     body: JSON.stringify(jsonBody)
   };
+  let timestarted = Date.now();
   let resp = await fetch(graphql_url, options);
+  let timeElapsed = Date.now() - timestarted;
+  console.log(`Query response received after ${timeElapsed} ms`);
+  console.log(jsonBody.query);
   let respJSON = await resp.json();
   return respJSON;
 }
@@ -256,7 +288,11 @@ export async function getProjectElementsPropertiesPaginated(projectId, filter, p
     },
     body: JSON.stringify(jsonBody)
   };
+  let timestarted = Date.now();
   let resp = await fetch(graphql_url, options);
+  let timeElapsed = Date.now() - timestarted;
+  console.log(`Query response received after ${timeElapsed} ms`);
+  console.log(jsonBody.query);
   let respJSON = await resp.json();
   return respJSON;
 }

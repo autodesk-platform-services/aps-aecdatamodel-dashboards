@@ -2,13 +2,14 @@
 
 const autocolors = window['chartjs-plugin-autocolors'];
 
-var GLOBAL_TABLES_COUNT = 0;
+window.GLOBAL_CHARTS_COUNT = 0;
 
 window.addEventListener("load", async () => {
   const login = document.getElementById('login');
   const hubsDropDown = document.getElementById('hubsdropdown');
   let hubsResponse = await getHubs();
   if (!!hubsResponse.data) {
+    hubsDropDown
     for (const hub of Object.values(hubsResponse.data.hubs.results)) {
       let hubOption = document.createElement("option");
       hubOption.text = hub.name;
@@ -19,7 +20,7 @@ window.addEventListener("load", async () => {
 
   const projectsDropDown = document.getElementById('projectsdropdown');
   hubsDropDown.onchange = async () => {
-    projectsDropDown.innerHTML = '';
+    projectsDropDown.innerHTML = '<option value="" disabled selected>Select your project</option>';
     let projectsResponse = await getProjects(hubsDropDown.value);
     for (const project of Object.values(projectsResponse.data.projects.results)) {
       let projectOption = document.createElement("option");
@@ -30,8 +31,9 @@ window.addEventListener("load", async () => {
   };
 
   projectsDropDown.onchange = async () => {
-    let selectedProjectProperties = await getProjectProperties(projectsDropDown.value);
-    propertiesNames = selectedProjectProperties.map(p => p.name);
+    if (window.GLOBAL_CHARTS_COUNT == 0) {
+      loadDefaultContent(document.getElementById('projectsdropdown').value);
+    }
   };
 
   prepareSwapFlexbox();
@@ -42,9 +44,9 @@ window.addEventListener("load", async () => {
     const { value: formValues } = await Swal.fire({
       title: 'Add property-based chart',
       html:
-        '<select id="charttype" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;"><option value="pie">pie</option><option value="bar">bar</option><option value="doughnut">doughnut</option></select>' +
-        '<input type="text" id="property" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="Family Name" placeholder="Type a property name here!" list="querypropertiesList" novalidate>' +
-        `<input type="text" id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="property.name.category=='Doors'" placeholder="Type your filter here!" list="queryfiltersList" novalidate>`,
+        '<span>Chart Type</span><select id="charttype" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;"><option value="pie">pie</option><option value="bar">bar</option><option value="doughnut">doughnut</option></select>' +
+        '<span>Property</span><input type="text" id="property" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="Family Name" placeholder="Type a property name here!" list="querypropertiesList" novalidate>' +
+        `<span>Filter</span><input type="text" id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="property.name.category=='Doors'" placeholder="Type your filter here!" list="queryfiltersList" novalidate>`,
       focusConfirm: false,
       preConfirm: () => {
         return [
@@ -56,45 +58,15 @@ window.addEventListener("load", async () => {
     });
 
     disableAddButtons();
-    let waitScreen = Swal.fire({
-      title: 'Please Wait !',
-      html: 'loading data',// add html attribute if you want or remove
-      allowOutsideClick: false,
-      showCancelButton: false,
-      showConfirmButton: false
-    });
+    let loadingDiv = createLoadingDiv();
     let successfull = true;
     try {
-      let respJSON = await getProjectElementsProperty(document.getElementById('projectsdropdown').value, formValues[1], formValues[0])
-      let cursor = respJSON.data.elementsByProject.pagination.cursor;
-      let chartData = {};
-      for (const result of respJSON.data.elementsByProject.results) {
-        if (!chartData[result.properties.results[0].value])
-          chartData[result.properties.results[0].value] = 0
-        chartData[result.properties.results[0].value]++
-      }
-      while (!!cursor) {
-        let newRespJSON = await getProjectElementsPropertyPaginated(document.getElementById('projectsdropdown').value, formValues[1], formValues[0], cursor)
-        cursor = newRespJSON.data.elementsByProject.pagination.cursor;
-        for (const result of newRespJSON.data.elementsByProject.results) {
-          if (!chartData[result.properties.results[0].value])
-            chartData[result.properties.results[0].value] = 0
-          chartData[result.properties.results[0].value]++
-        }
-      }
-      if (Object.keys(chartData).length > 0) {
-        createChart(formValues[0], chartData, formValues[2]);
-      }
-      else {
-        console.log(`${chartData.length} elements found!`);
-        successfull = false;
-      }
+      successfull = await handleChartCreation(document.getElementById('projectsdropdown').value, formValues[1], formValues[0], loadingDiv, formValues[2]);
     }
     catch (e) {
-      successfull = false;
       console.log(e);
     }
-    waitScreen.close();
+    loadingDiv.remove();
     if (!successfull)
       showToast('Error! Please check console!');
     enableAddButtons();
@@ -108,8 +80,8 @@ window.addEventListener("load", async () => {
     const { value: formValues } = await Swal.fire({
       title: 'Add property-based table',
       html:
-        '<input type="email" id="properties" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="Family Name,Element Name" placeholder="Type comma-separated properties names here!" list="querypropertiesList" multiple novalidate>' +
-        '<input type="text" id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Type your filter here!" list="queryfiltersList">',
+        '<span>Properties</span><input type="email" id="properties" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="Family Name,Element Name" placeholder="Type comma-separated properties names here!" list="querypropertiesList" multiple novalidate>' +
+        '<span>Filter</span><input type="text" id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Type your filter here!" list="queryfiltersList">',
       focusConfirm: false,
       preConfirm: () => {
         return [
@@ -120,52 +92,15 @@ window.addEventListener("load", async () => {
     });
 
     disableAddButtons();
-    let waitScreen = Swal.fire({
-      title: 'Please Wait!',
-      html: 'loading data',// add html attribute if you want or remove
-      allowOutsideClick: false,
-      showCancelButton: false,
-      showConfirmButton: false
-    });
+    let loadingDiv = createLoadingDiv();
     let successfull = true;
     try {
-      let respJSON = await getProjectElementsProperties(document.getElementById('projectsdropdown').value, formValues[1], formValues[0])
-      let cursor = respJSON.data.elementsByProject.pagination.cursor;
-      let tableData = [];
-      for (const result of respJSON.data.elementsByProject.results) {
-        let newObj = {};
-        for (const property of formValues[0].split(',')) {
-          let newProp = result.properties.results.find(p => p.name == property);
-          newObj[property] = newProp ? newProp.value : "";
-        }
-        tableData.push(newObj)
-      }
-      while (!!cursor) {
-        let newRespJSON = await getProjectElementsPropertiesPaginated(document.getElementById('projectsdropdown').value, formValues[1], formValues[0], cursor)
-        cursor = newRespJSON.data.elementsByProject.pagination.cursor;
-        for (const result of newRespJSON.data.elementsByProject.results) {
-          let newObj = {};
-          for (const property of formValues[0].split(',')) {
-            let newProp = result.properties.results.find(p => p.name == property);
-            newObj[property] = newProp ? newProp.value : "";
-          }
-          tableData.push(newObj)
-        }
-      }
-      if (tableData.length > 0) {
-        createTable(formValues[0], tableData);
-      }
-      else {
-        console.log(`${tableData.length} elements found!`);
-        successfull = false;
-      }
-
+      successfull = await handleTableCreation(document.getElementById('projectsdropdown').value, formValues[1], formValues[0]);
     }
     catch (e) {
-      successfull = false;
       console.log(e);
     }
-    waitScreen.close();
+    loadingDiv.remove();
     if (!successfull)
       showToast('Error! Please check console!');
     enableAddButtons();
@@ -182,11 +117,11 @@ window.addEventListener("load", async () => {
     const { value: formValues } = await Swal.fire({
       title: 'Add property-based comparision',
       html:
-        '<select id="charttype" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;"><option value="radar">radar</option><option value="line">line</option></select>' +
-        '<input type="text" id="designone" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="First design name here!" list="designsList">' +
-        '<input type="text" id="designtwo" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Second design name here!" list="designsList">' +
-        '<input type="text" id="property" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="Family Name" placeholder="Type a property name here!" list="querypropertiesList" novalidate>' +
-        '<input type="text" id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Type your filter here!" list="queryfiltersList">',
+        '<span>Chart Type</span><select id="charttype" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;"><option value="radar">radar</option><option value="line">line</option></select>' +
+        '<span>First Design</span><input type="text" id="designone" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="First design name here!" list="designsList">' +
+        '<span>Second Design</span><input type="text" id="designtwo" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Second design name here!" list="designsList">' +
+        '<span>Property</span><input type="text" id="property" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="Family Name" placeholder="Type a property name here!" list="querypropertiesList" novalidate>' +
+        '<span>Filter</span><input type="text" id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Type your filter here!" list="queryfiltersList">',
       focusConfirm: false,
       preConfirm: () => {
         return [
@@ -199,13 +134,7 @@ window.addEventListener("load", async () => {
       }
     });
     disableAddButtons();
-    let waitScreen = Swal.fire({
-      title: 'Please Wait!',
-      html: 'loading data',// add html attribute if you want or remove
-      allowOutsideClick: false,
-      showCancelButton: false,
-      showConfirmButton: false
-    });
+    let loadingDiv = createLoadingDiv();
     let successfull = true;
     try {
       //Design One
@@ -249,6 +178,7 @@ window.addEventListener("load", async () => {
       let chartData = aggregateDesignsData(chartDataOne, chartDataTwo);
 
       if (Object.keys(chartData).length > 0) {
+        loadingDiv.remove();
         createComparisionChart(formValues[2], formValues[3], chartData, formValues[4]);
       }
       else {
@@ -261,7 +191,7 @@ window.addEventListener("load", async () => {
       successfull = false;
       console.log(e);
     }
-    waitScreen.close();
+    loadingDiv.remove();
     if (!successfull)
       showToast('Error! Please check console!');
     enableAddButtons();
@@ -288,6 +218,188 @@ window.addEventListener("load", async () => {
     console.error(err);
   }
 });
+
+async function handleChartCreation(projectId, filter, property, loadingDiv, chartType, chartTitle) {
+  let successfull = true;
+  try {
+    let respJSON = await getProjectElementsProperty(projectId, filter, property);
+    let cursor = respJSON.data.elementsByProject.pagination.cursor;
+    let chartData = {};
+    for (const result of respJSON.data.elementsByProject.results) {
+      if (!chartData[result.properties.results[0].value])
+        chartData[result.properties.results[0].value] = 0
+      chartData[result.properties.results[0].value]++
+    }
+    while (!!cursor) {
+      let newRespJSON = await getProjectElementsPropertyPaginated(projectId, filter, property, cursor);
+      cursor = newRespJSON.data.elementsByProject.pagination.cursor;
+      for (const result of newRespJSON.data.elementsByProject.results) {
+        if (!chartData[result.properties.results[0].value])
+          chartData[result.properties.results[0].value] = 0
+        chartData[result.properties.results[0].value]++
+      }
+    }
+    if (Object.keys(chartData).length > 0) {
+      loadingDiv.remove();
+      let chartName = chartTitle ? chartTitle : property;
+      let newChartDiv = await createChart(chartName, chartData, chartType);
+      if (chartTitle) {
+        newChartDiv.style.width = "40%";
+        newChartDiv.style.height = "400px";
+      }
+    }
+    else {
+      console.log(`${chartData.length} elements found!`);
+      successfull = false;
+    }
+  }
+  catch (e) {
+    successfull = false;
+    console.log(e);
+  }
+  return successfull;
+}
+
+async function handleTableCreation(projectId, filter, propertiesNames, loadingDiv, tableTitle) {
+  let successfull = true;
+  try {
+    let respJSON = await getProjectElementsProperties(projectId, filter, propertiesNames)
+    let cursor = respJSON.data.elementsByProject.pagination.cursor;
+    let tableData = [];
+    for (const result of respJSON.data.elementsByProject.results) {
+      let newObj = {};
+      for (const property of propertiesNames.split(',')) {
+        let newProp = result.properties.results.find(p => p.name == property);
+        newObj[property] = newProp ? newProp.value : "";
+      }
+      tableData.push(newObj)
+    }
+    while (!!cursor) {
+      let newRespJSON = await getProjectElementsPropertiesPaginated(projectId, filter, propertiesNames, cursor)
+      cursor = newRespJSON.data.elementsByProject.pagination.cursor;
+      for (const result of newRespJSON.data.elementsByProject.results) {
+        let newObj = {};
+        for (const property of propertiesNames.split(',')) {
+          let newProp = result.properties.results.find(p => p.name == property);
+          newObj[property] = newProp ? newProp.value : "";
+        }
+        tableData.push(newObj)
+      }
+    }
+    if (tableData.length > 0) {
+      loadingDiv.remove();
+      let tableLabel = tableTitle ? tableTitle : propertiesNames;
+      let newTableDiv = await createTable(tableLabel, tableData);
+      if (tableTitle) {
+        newTableDiv.style.width = "40%";
+        newTableDiv.style.height = "400px";
+      }
+    }
+    else {
+      console.log(`${tableData.length} elements found!`);
+      successfull = false;
+    }
+
+  }
+  catch (e) {
+    successfull = false;
+    console.log(e);
+  }
+  return successfull;
+}
+
+async function loadDefaultContent(projectId) {
+  await addDefaultTable(projectId, "property.name.category=='Rooms'", 'Name,Occupancy,Number,Perimeter,Area,Element Name,Volume', 'RoomsTakeoffTable');
+  await addDefaultChart(projectId, "property.name.category=='Rooms'", 'Element Name', 'bar', 'RoomsTakeoffChart');
+  await addDefaultTable(projectId, "property.name.category=='Doors'", 'Name,Area,Element Name', 'DoorsTakeoffTable');
+  await addDefaultChart(projectId, "property.name.category=='Doors' and 'property.name.Element Context'==Instance", 'Element Name', 'bar', 'DoorsTakeoffChart');
+}
+
+async function addDefaultChart(projectId, filter, property, chartType, chartName) {
+  disableAddButtons();
+  let loadingDiv = createLoadingDiv();
+  let successfull = await handleChartCreation(projectId, filter, property, loadingDiv, chartType, chartName);
+  try {
+    loadingDiv.remove();
+  }
+  catch (e) {
+
+  }
+  if (!successfull)
+    showToast('Error! Please check console!');
+  enableAddButtons();
+  if (!successfull)
+    showToast('Error! Please check console!');
+}
+
+async function addDefaultTable(projectId, filter, properties, tableName) {
+  disableAddButtons();
+  let loadingDiv = createLoadingDiv();
+  let successfull = await handleTableCreation(projectId, filter, properties, loadingDiv, tableName);
+  try {
+    loadingDiv.remove();
+  }
+  catch (e) {
+
+  }
+  if (!successfull)
+    showToast('Error! Please check console!');
+  enableAddButtons();
+  if (!successfull)
+    showToast('Error! Please check console!');
+}
+
+function createLoadingDiv() {
+  const dashboardsContainer = document.getElementById('aeccim-dashboards');
+  let chartDiv = document.createElement("div");
+  chartDiv.className = "chartDiv draggable";
+
+  let closebutton = document.createElement('div');
+  closebutton.id = 'close';
+  closebutton.onclick = function () {
+    this.parentNode.remove();
+    return false;
+  };
+  closebutton.innerHTML = 'X';
+  closebutton.className = 'chartheader';
+  chartDiv.appendChild(closebutton);
+
+  let movebutton = document.createElement('div');
+  movebutton.id = 'move';
+  movebutton.className = 'draggable-handle chartheader';
+  movebutton.innerHTML = 'M';
+  chartDiv.appendChild(movebutton);
+
+  let charttitle = document.createElement('div');
+  charttitle.id = 'title';
+  charttitle.className = 'chartheader';
+  charttitle.onclick = (event) => {
+    changeDivTitle(event);
+  };
+  chartDiv.appendChild(charttitle);
+  let chartCanvas = document.createElement("div");
+  chartCanvas.className = "chartcanvas";
+  chartCanvas.id = `loadingDiv${window.GLOBAL_CHARTS_COUNT}`;
+  chartDiv.appendChild(chartCanvas);
+  dashboardsContainer.appendChild(chartDiv);
+  addLoadingDiv(`loadingDiv${window.GLOBAL_CHARTS_COUNT}`);
+  return chartDiv;
+}
+
+function addLoadingDiv(targetDivId) {
+  let waitScreen = Swal.fire({
+    title: 'Please Wait !',
+    html: 'loading data',// add html attribute if you want or remove
+    allowOutsideClick: false,
+    showCancelButton: false,
+    showConfirmButton: false,
+    target: '#' + targetDivId,
+    customClass: {                      // <------ customClass is an object!
+      container: 'position-absolute'
+    }
+  });
+  return waitScreen;
+}
 
 function aggregateDesignsData(chartDataOne, chartDataTwo) {
   let chartData = {};
@@ -336,6 +448,7 @@ async function createTable(tableLabel, tableData) {
   closebutton.id = 'close';
   closebutton.onclick = function () {
     this.parentNode.parentNode.remove();
+    window.GLOBAL_CHARTS_COUNT--;
     return false;
   };
   closebutton.innerHTML = 'X';
@@ -360,8 +473,7 @@ async function createTable(tableLabel, tableData) {
   //Create div for the table
   let tableInnerDiv = document.createElement("div");
   tableInnerDiv.className = "tablediv";
-  let tableId = 'table' + GLOBAL_TABLES_COUNT;
-  GLOBAL_TABLES_COUNT++;
+  let tableId = 'table' + window.GLOBAL_CHARTS_COUNT;
   tableInnerDiv.id = tableId;
   tableDiv.appendChild(tableInnerDiv);
   dashboardsContainer.appendChild(tableDiv);
@@ -380,6 +492,8 @@ async function createTable(tableLabel, tableData) {
     }
     table.setGroupBy(groups);
   });
+  window.GLOBAL_CHARTS_COUNT++;
+  return tableDiv;
 }
 
 async function createChart(chartLabel, chartData, chartType) {
@@ -392,6 +506,7 @@ async function createChart(chartLabel, chartData, chartType) {
   closebutton.id = 'close';
   closebutton.onclick = function () {
     this.parentNode.remove();
+    window.GLOBAL_CHARTS_COUNT--;
     return false;
   };
   closebutton.innerHTML = 'X';
@@ -445,6 +560,8 @@ async function createChart(chartLabel, chartData, chartType) {
       }
     }
   );
+  window.GLOBAL_CHARTS_COUNT++;
+  return chartDiv;
 }
 
 async function createComparisionChart(designOneId, designTwoId, chartData, chartType) {
@@ -460,6 +577,7 @@ async function createComparisionChart(designOneId, designTwoId, chartData, chart
   closebutton.id = 'close';
   closebutton.onclick = function () {
     this.parentNode.remove();
+    window.GLOBAL_CHARTS_COUNT--;
     return false;
   };
   closebutton.innerHTML = 'X';
@@ -528,6 +646,7 @@ async function createComparisionChart(designOneId, designTwoId, chartData, chart
       }
     }
   );
+  window.GLOBAL_CHARTS_COUNT++;
 }
 
 function changeDivTitle(event) {

@@ -50,11 +50,13 @@
   height: 40vh;
   padding-top: 3em;
   display: inline-flex;
+  margin-left: 20px;
 }
 
 .tableHeader{
-  position: absolute;
+  position: relative;
   display: inline-flex;
+  width: 0px;
 }
 
 .tablediv{
@@ -74,6 +76,10 @@
 
 .form-switch.form-switch-sm {
   margin-bottom: 0.5rem;
+}
+
+.position-absolute {
+  position: absolute !important;
 }
 
 .form-switch.form-switch-sm .form-check-input {
