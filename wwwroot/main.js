@@ -309,10 +309,10 @@ async function handleTableCreation(projectId, filter, propertiesNames, loadingDi
 }
 
 async function loadDefaultContent(projectId) {
-  await addDefaultTable(projectId, "property.name.category=='Rooms'", 'Name,Occupancy,Number,Perimeter,Area,Element Name,Volume', 'RoomsTakeoffTable');
-  await addDefaultChart(projectId, "property.name.category=='Rooms'", 'Element Name', 'bar', 'RoomsTakeoffChart');
-  await addDefaultTable(projectId, "property.name.category=='Doors'", 'Name,Area,Element Name', 'DoorsTakeoffTable');
-  await addDefaultChart(projectId, "property.name.category=='Doors' and 'property.name.Element Context'==Instance", 'Element Name', 'bar', 'DoorsTakeoffChart');
+  await addDefaultTable(projectId, "property.name.category=cs='Rooms'", 'Name,Occupancy,Number,Perimeter,Area,Element Name,Volume', 'RoomsTakeoffTable');
+  await addDefaultChart(projectId, "property.name.category=cs='Rooms'", 'Element Name', 'bar', 'RoomsTakeoffChart');
+  await addDefaultTable(projectId, "property.name.category=cs='Doors'", 'Height,Width,Element Name', 'DoorsTakeoffTable');
+  await addDefaultChart(projectId, "property.name.category=cs='Doors'", 'Element Name', 'bar', 'DoorsTakeoffChart');
 }
 
 async function addDefaultChart(projectId, filter, property, chartType, chartName) {
