@@ -223,6 +223,80 @@ export async function getDesignElementsPropertyPaginated(designId, filter, prope
   return respJSON;
 }
 
+export async function getVersionElementsProperty(designId, versionNumber, filter, propertyName) {
+  let token = await (await fetch('/api/auth/token')).json();
+  let jsonBody = {
+    query: `query elementsByDesignAtVersion {
+      elements(designId: "${designId}", versionNumber:${versionNumber}, filter:{query:"${filter}"}) {
+        pagination{cursor}
+        results{
+          name
+          properties(filter:{names:"${propertyName}"}){
+            results{
+              value
+              name
+            }
+          }
+        }
+      }
+    }`,
+    variables: undefined,
+    operationName: "getDesignElementsProperty"
+  }
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token.access_token
+    },
+    body: JSON.stringify(jsonBody)
+  };
+  let timestarted = Date.now();
+  let resp = await fetch(graphql_url, options);
+  let timeElapsed = Date.now() - timestarted;
+  console.log(`Query response received after ${timeElapsed} ms`);
+  console.log(jsonBody.query);
+  let respJSON = await resp.json();
+  return respJSON;
+}
+
+export async function getVersionElementsPropertyPaginated(designId, versionNumber, filter, propertyName, cursor) {
+  let token = await (await fetch('/api/auth/token')).json();
+  let jsonBody = {
+    query: `query getDesignElementsProperty {
+      elements(designId: "${designId}", versionNumber:${versionNumber} filter:{query:"${filter}"}, pagination:{cursor:"${cursor}"}) {
+        pagination{cursor}
+        results{
+          name
+          properties(filter:{names:"${propertyName}"}){
+            results{
+              value
+              name
+            }
+          }
+        }
+      }
+    }`,
+    variables: undefined,
+    operationName: "getDesignElementsProperty"
+  }
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token.access_token
+    },
+    body: JSON.stringify(jsonBody)
+  };
+  let timestarted = Date.now();
+  let resp = await fetch(graphql_url, options);
+  let timeElapsed = Date.now() - timestarted;
+  console.log(`Query response received after ${timeElapsed} ms`);
+  console.log(jsonBody.query);
+  let respJSON = await resp.json();
+  return respJSON;
+}
+
 export async function getProjectElementsProperties(projectId, filter, propertiesNames) {
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {

@@ -39,6 +39,12 @@
   margin-top: 1em;
 }
 
+.loadingchartcanvas {
+  width: 25vh;
+  height: 40vh;
+  position: absolute;
+}
+
 .chartheader{
   margin-right: 5px;
 }

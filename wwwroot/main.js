@@ -1,4 +1,4 @@
-﻿import { getHubs, getProjects, getProjectElementsProperty, getProjectElementsPropertyPaginated, getProjectElementsProperties, getProjectElementsPropertiesPaginated, getProjectDesigns, getDesignElementsProperty, getDesignElementsPropertyPaginated } from './graphql.js';
+﻿import { getHubs, getProjects, getProjectElementsProperty, getProjectElementsPropertyPaginated, getProjectElementsProperties, getProjectElementsPropertiesPaginated, getProjectDesigns, getDesignElementsProperty, getDesignElementsPropertyPaginated, getVersionElementsProperty, getVersionElementsPropertyPaginated } from './graphql.js';
 
 const autocolors = window['chartjs-plugin-autocolors'];
 
@@ -81,7 +81,7 @@ window.addEventListener("load", async () => {
       title: 'Add property-based table',
       html:
         '<span>Properties</span><input type="email" id="properties" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="Family Name,Element Name" placeholder="Type comma-separated properties names here!" list="querypropertiesList" multiple novalidate>' +
-        '<span>Filter</span><input type="text" id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Type your filter here!" list="querytablefiltersList" novalidate>',
+        `<span>Filter</span><input type="text" id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="property.name.category=='Doors'" placeholder="Type your filter here!" list="querytablefiltersList" novalidate>`,
       focusConfirm: false,
       preConfirm: () => {
         return [
@@ -95,7 +95,7 @@ window.addEventListener("load", async () => {
     let loadingDiv = createLoadingDiv();
     let successfull = true;
     try {
-      successfull = await handleTableCreation(document.getElementById('projectsdropdown').value, formValues[1], formValues[0]);
+      successfull = await handleTableCreation(document.getElementById('projectsdropdown').value, formValues[1], formValues[0], loadingDiv);
     }
     catch (e) {
       console.log(e);
@@ -119,7 +119,9 @@ window.addEventListener("load", async () => {
       html:
         '<span>Chart Type</span><select id="charttype" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;"><option value="radar">radar</option><option value="line">line</option></select>' +
         '<span>First Design</span><input type="text" id="designone" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="First design name here!" list="designsList">' +
+        '<span>First Design</span><input type="number" id="versionone" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="First design name here!">' +
         '<span>Second Design</span><input type="text" id="designtwo" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Second design name here!" list="designsList">' +
+        '<span>Second Design</span><input type="number" id="versiontwo" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Second design name here!">' +
         '<span>Property</span><input type="text" id="property" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="Family Name" placeholder="Type a property name here!" list="querypropertiesList" novalidate>' +
         '<span>Filter</span><input type="text" id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Type your filter here!" list="queryfiltersList">',
       focusConfirm: false,
@@ -129,7 +131,9 @@ window.addEventListener("load", async () => {
           document.getElementById('filter').value,
           document.getElementById('designone').value,
           document.getElementById('designtwo').value,
-          document.getElementById('charttype').value
+          document.getElementById('charttype').value,
+          document.getElementById('versionone').value,
+          document.getElementById('versiontwo').value
         ]
       }
     });
@@ -138,7 +142,7 @@ window.addEventListener("load", async () => {
     let successfull = true;
     try {
       //Design One
-      let respJSON = await getDesignElementsProperty(formValues[2], formValues[1], formValues[0])
+      let respJSON = await getVersionElementsProperty(formValues[2], formValues[5], formValues[1], formValues[0])
       let cursor = respJSON.data.elements.pagination.cursor;
       let chartDataOne = {};
       for (const result of respJSON.data.elements.results) {
@@ -147,7 +151,7 @@ window.addEventListener("load", async () => {
         chartDataOne[result.properties.results[0].value]++
       }
       while (!!cursor) {
-        let newRespJSON = await getDesignElementsPropertyPaginated(formValues[2], formValues[1], formValues[0], cursor)
+        let newRespJSON = await getVersionElementsPropertyPaginated(formValues[2], formValues[5], formValues[1], formValues[0], cursor)
         cursor = newRespJSON.data.elements.pagination.cursor;
         for (const result of newRespJSON.data.elements.results) {
           if (!chartDataOne[result.properties.results[0].value])
@@ -157,7 +161,7 @@ window.addEventListener("load", async () => {
       }
 
       //Design Two
-      respJSON = await getDesignElementsProperty(formValues[3], formValues[1], formValues[0])
+      respJSON = await getVersionElementsProperty(formValues[3], formValues[6], formValues[1], formValues[0])
       cursor = respJSON.data.elements.pagination.cursor;
       let chartDataTwo = {};
       for (const result of respJSON.data.elements.results) {
@@ -166,7 +170,7 @@ window.addEventListener("load", async () => {
         chartDataTwo[result.properties.results[0].value]++
       }
       while (!!cursor) {
-        let newRespJSON = await getDesignElementsPropertyPaginated(formValues[3], formValues[1], formValues[0], cursor)
+        let newRespJSON = await getVersionElementsPropertyPaginated(formValues[3], formValues[6], formValues[1], formValues[0], cursor)
         cursor = newRespJSON.data.elements.pagination.cursor;
         for (const result of newRespJSON.data.elements.results) {
           if (!chartDataTwo[result.properties.results[0].value])
@@ -316,10 +320,10 @@ async function handleTableCreation(projectId, filter, propertiesNames, loadingDi
 }
 
 async function loadDefaultContent(projectId) {
-  await addDefaultTable(projectId, "property.name.category=='Rooms'", 'Name,Occupancy,Number,Perimeter,Area,Element Name,Volume', 'RoomsTakeoffTable');
-  await addDefaultChart(projectId, "property.name.category=='Rooms'", 'Element Name', 'bar', 'RoomsTakeoffChart');
-  await addDefaultTable(projectId, "property.name.category=='Doors'", 'Height,Width,Element Name', 'DoorsTakeoffTable');
-  await addDefaultChart(projectId, "property.name.category=='Doors'", 'Element Name', 'bar', 'DoorsTakeoffChart');
+  await addDefaultTable(projectId, "property.name.category=='Rooms' and 'property.name.Element Context'==Instance", 'Name,Occupancy,Number,Perimeter,Area,Element Name,Volume', 'RoomsTakeoffTable');
+  await addDefaultChart(projectId, "property.name.category=='Rooms' and 'property.name.Element Context'==Instance", 'Element Name', 'bar', 'RoomsTakeoffChart');
+  await addDefaultTable(projectId, "property.name.category=='Doors' and 'property.name.Element Context'==Instance", 'Height,Width,Element Name', 'DoorsTakeoffTable');
+  await addDefaultChart(projectId, "property.name.category=='Doors' and 'property.name.Element Context'==Instance", 'Element Name', 'bar', 'DoorsTakeoffChart');
 }
 
 async function addDefaultChart(projectId, filter, property, chartType, chartName) {
@@ -382,7 +386,7 @@ function createLoadingDiv() {
   };
   chartDiv.appendChild(charttitle);
   let chartCanvas = document.createElement("div");
-  chartCanvas.className = "chartcanvas";
+  chartCanvas.className = "loadingchartcanvas";
   chartCanvas.id = `loadingDiv${window.GLOBAL_CHARTS_COUNT}`;
   chartDiv.appendChild(chartCanvas);
   dashboardsContainer.appendChild(chartDiv);
