@@ -28,7 +28,7 @@
   font-size: 1em;
 }
 
-#aeccim-dashboards {
+#aecdm-dashboards {
   padding-top: 3em;
 }
 
@@ -48,9 +48,11 @@
   resize: both;
   width: 25vh;
   height: 40vh;
-  padding-top: 3em;
+  /* padding-top: 3em; */
   display: inline-flex;
-  margin-left: 20px;
+  margin: 5px;
+  border-style: solid;
+  border-width: thick;
 }
 
 .tableHeader{
@@ -92,6 +94,16 @@
   display: block;
 }
 
-#move{
+.move{
   cursor: move;
+  height: 20px;
+}
+
+.close{
+  height: 20px;
+}
+
+.chart-title{
+  font-size: 20px;
+  white-space: nowrap;
 }

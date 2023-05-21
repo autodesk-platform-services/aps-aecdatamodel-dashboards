@@ -32,7 +32,9 @@
     <button id="addtable" data-balloon-length="fit" aria-label="Add Table!" data-balloon-pos="down">
       Add Table
     </button>
-    <button id="comparedesigns" data-balloon-length="fit" aria-label="Add Comparision chart!" data-balloon-pos="down">
+    <!-- Hidden for now -->
+    <button id="comparedesigns" data-balloon-length="fit" aria-label="Add Comparision chart!" data-balloon-pos="down"
+      style="display: none;">
       Compare Designs
     </button>
     <button id="login" style="visibility: hidden;" data-balloon-length="fit" aria-label="Login Here!"
@@ -40,7 +42,7 @@
       Login
     </button>
   </div>
-  <div id="aeccim-dashboards"></div>
+  <div id="aecdm-dashboards"></div>
   <!-- Sweetalert2 to handle notifications -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- Chart js for graphics -->
@@ -56,9 +58,9 @@
   <script src="./graphql.js" type="module"></script>
   <!-- Data Lists for AEC options-->
   <datalist id="queryfiltersList">
-    <option value="property.name.family=cs='Basic Walls'">property.name.family=cs=’Basic Walls’</option>
-    <option value="property.name.category=cs='Doors' or property.name.category=cs='Windows'">
-      property.name.category=cs=’Doors
+    <option value="property.name.family=='Basic Walls'">property.name.family=cs=’Basic Walls’</option>
+    <option value="property.name.category=='Doors' or property.name.category=='Windows'">
+      property.name.category==’Doors
       or Windows’</option>
     <option value="metadata.createdOn>=2020-01-20T14:00:00Z and metadata.createdOn<2020-12-20T14:00:00Z>">
       metadata.createdOn>=2020-01-20T14:00:00Z and metadata.createdOn</option>
@@ -78,6 +80,10 @@
     <option value="Offset">Offset</option>
   </datalist>
   <datalist id="designsList"></datalist>
+  <datalist id="querytablefiltersList">
+    <option value="property.name.family=='Basic Walls'">property.name.family=='Basic Walls'</option>
+    <option value="property.name.category=='Doors'">property.name.category=='Doors'</option>
+  </datalist>
 </body>
 
 </html>

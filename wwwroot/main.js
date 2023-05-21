@@ -81,7 +81,7 @@ window.addEventListener("load", async () => {
       title: 'Add property-based table',
       html:
         '<span>Properties</span><input type="email" id="properties" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="Family Name,Element Name" placeholder="Type comma-separated properties names here!" list="querypropertiesList" multiple novalidate>' +
-        '<span>Filter</span><input type="text" id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Type your filter here!" list="queryfiltersList">',
+        '<span>Filter</span><input type="text" id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Type your filter here!" list="querytablefiltersList" novalidate>',
       focusConfirm: false,
       preConfirm: () => {
         return [
@@ -225,11 +225,14 @@ async function handleChartCreation(projectId, filter, property, loadingDiv, char
     let respJSON = await getProjectElementsProperty(projectId, filter, property);
     let cursor = respJSON.data.elementsByProject.pagination.cursor;
     let chartData = {};
+    let elementsFound = 0;
     for (const result of respJSON.data.elementsByProject.results) {
       if (!chartData[result.properties.results[0].value])
         chartData[result.properties.results[0].value] = 0
       chartData[result.properties.results[0].value]++
+      elementsFound++;
     }
+    loadingDiv.lastChild.lastChild.lastChild.childNodes[5].innerHTML = `Loading Data: ${elementsFound} elements found`;
     while (!!cursor) {
       let newRespJSON = await getProjectElementsPropertyPaginated(projectId, filter, property, cursor);
       cursor = newRespJSON.data.elementsByProject.pagination.cursor;
@@ -237,7 +240,9 @@ async function handleChartCreation(projectId, filter, property, loadingDiv, char
         if (!chartData[result.properties.results[0].value])
           chartData[result.properties.results[0].value] = 0
         chartData[result.properties.results[0].value]++
+        elementsFound++;
       }
+      loadingDiv.lastChild.lastChild.lastChild.childNodes[5].innerHTML = `Loading Data: ${elementsFound} elements found`;
     }
     if (Object.keys(chartData).length > 0) {
       loadingDiv.remove();
@@ -272,8 +277,9 @@ async function handleTableCreation(projectId, filter, propertiesNames, loadingDi
         let newProp = result.properties.results.find(p => p.name == property);
         newObj[property] = newProp ? newProp.value : "";
       }
-      tableData.push(newObj)
+      tableData.push(newObj);
     }
+    loadingDiv.lastChild.lastChild.lastChild.childNodes[5].innerHTML = `Loading Data: ${tableData.length} elements found`;
     while (!!cursor) {
       let newRespJSON = await getProjectElementsPropertiesPaginated(projectId, filter, propertiesNames, cursor)
       cursor = newRespJSON.data.elementsByProject.pagination.cursor;
@@ -285,6 +291,7 @@ async function handleTableCreation(projectId, filter, propertiesNames, loadingDi
         }
         tableData.push(newObj)
       }
+      loadingDiv.lastChild.lastChild.lastChild.childNodes[5].innerHTML = `Loading Data: ${tableData.length} elements found`;
     }
     if (tableData.length > 0) {
       loadingDiv.remove();
@@ -309,10 +316,10 @@ async function handleTableCreation(projectId, filter, propertiesNames, loadingDi
 }
 
 async function loadDefaultContent(projectId) {
-  await addDefaultTable(projectId, "property.name.category=cs='Rooms'", 'Name,Occupancy,Number,Perimeter,Area,Element Name,Volume', 'RoomsTakeoffTable');
-  await addDefaultChart(projectId, "property.name.category=cs='Rooms'", 'Element Name', 'bar', 'RoomsTakeoffChart');
-  await addDefaultTable(projectId, "property.name.category=cs='Doors'", 'Height,Width,Element Name', 'DoorsTakeoffTable');
-  await addDefaultChart(projectId, "property.name.category=cs='Doors'", 'Element Name', 'bar', 'DoorsTakeoffChart');
+  await addDefaultTable(projectId, "property.name.category=='Rooms'", 'Name,Occupancy,Number,Perimeter,Area,Element Name,Volume', 'RoomsTakeoffTable');
+  await addDefaultChart(projectId, "property.name.category=='Rooms'", 'Element Name', 'bar', 'RoomsTakeoffChart');
+  await addDefaultTable(projectId, "property.name.category=='Doors'", 'Height,Width,Element Name', 'DoorsTakeoffTable');
+  await addDefaultChart(projectId, "property.name.category=='Doors'", 'Element Name', 'bar', 'DoorsTakeoffChart');
 }
 
 async function addDefaultChart(projectId, filter, property, chartType, chartName) {
@@ -350,29 +357,26 @@ async function addDefaultTable(projectId, filter, properties, tableName) {
 }
 
 function createLoadingDiv() {
-  const dashboardsContainer = document.getElementById('aeccim-dashboards');
+  const dashboardsContainer = document.getElementById('aecdm-dashboards');
   let chartDiv = document.createElement("div");
   chartDiv.className = "chartDiv draggable";
 
-  let closebutton = document.createElement('div');
-  closebutton.id = 'close';
+  let closebutton = document.createElement('img');
   closebutton.onclick = function () {
     this.parentNode.remove();
     return false;
   };
-  closebutton.innerHTML = 'X';
-  closebutton.className = 'chartheader';
+  closebutton.className = 'chartheader close';
+  closebutton.src = 'https://img.icons8.com/glyph-neue/64/delete-sign.png';
   chartDiv.appendChild(closebutton);
 
-  let movebutton = document.createElement('div');
-  movebutton.id = 'move';
-  movebutton.className = 'draggable-handle chartheader';
-  movebutton.innerHTML = 'M';
+  let movebutton = document.createElement('img');
+  movebutton.className = 'draggable-handle chartheader move';
+  movebutton.src = 'https://img.icons8.com/ios-glyphs/30/resize-four-directions--v2.png';
   chartDiv.appendChild(movebutton);
 
   let charttitle = document.createElement('div');
-  charttitle.id = 'title';
-  charttitle.className = 'chartheader';
+  charttitle.className = 'chartheader chart-title';
   charttitle.onclick = (event) => {
     changeDivTitle(event);
   };
@@ -436,7 +440,7 @@ function updateDesignsList(designsJSON) {
 }
 
 async function createTable(tableLabel, tableData) {
-  const dashboardsContainer = document.getElementById('aeccim-dashboards');
+  const dashboardsContainer = document.getElementById('aecdm-dashboards');
   let tableDiv = document.createElement("div");
   tableDiv.className = "chartDiv draggable";
 
@@ -444,27 +448,24 @@ async function createTable(tableLabel, tableData) {
   tableHeader.className = 'tableHeader';
   tableDiv.appendChild(tableHeader);
 
-  let closebutton = document.createElement('div');
-  closebutton.id = 'close';
+  let closebutton = document.createElement('img');
   closebutton.onclick = function () {
     this.parentNode.parentNode.remove();
     window.GLOBAL_CHARTS_COUNT--;
     return false;
   };
-  closebutton.innerHTML = 'X';
-  closebutton.className = 'chartheader';
+  closebutton.className = 'chartheader close';
+  closebutton.src = 'https://img.icons8.com/glyph-neue/64/delete-sign.png';
   tableHeader.appendChild(closebutton);
 
-  let movebutton = document.createElement('div');
-  movebutton.id = 'move';
-  movebutton.className = 'draggable-handle chartheader';
-  movebutton.innerHTML = 'M';
+  let movebutton = document.createElement('img');
+  movebutton.className = 'draggable-handle chartheader move';
+  movebutton.src = 'https://img.icons8.com/ios-glyphs/30/resize-four-directions--v2.png';
   tableHeader.appendChild(movebutton);
 
   let tabletitle = document.createElement('div');
-  tabletitle.id = 'title';
   tabletitle.innerHTML = tableLabel;
-  tabletitle.className = 'chartheader';
+  tabletitle.className = 'chartheader chart-title';
   tabletitle.onclick = (event) => {
     changeDivTitle(event);
   };
@@ -498,31 +499,28 @@ async function createTable(tableLabel, tableData) {
 
 async function createChart(chartLabel, chartData, chartType) {
 
-  const dashboardsContainer = document.getElementById('aeccim-dashboards');
+  const dashboardsContainer = document.getElementById('aecdm-dashboards');
   let chartDiv = document.createElement("div");
   chartDiv.className = "chartDiv draggable";
 
-  let closebutton = document.createElement('div');
-  closebutton.id = 'close';
+  let closebutton = document.createElement('img');
   closebutton.onclick = function () {
     this.parentNode.remove();
     window.GLOBAL_CHARTS_COUNT--;
     return false;
   };
-  closebutton.innerHTML = 'X';
-  closebutton.className = 'chartheader';
+  closebutton.className = 'chartheader close';
+  closebutton.src = 'https://img.icons8.com/glyph-neue/64/delete-sign.png';
   chartDiv.appendChild(closebutton);
 
-  let movebutton = document.createElement('div');
-  movebutton.id = 'move';
-  movebutton.className = 'draggable-handle chartheader';
-  movebutton.innerHTML = 'M';
+  let movebutton = document.createElement('img');
+  movebutton.className = 'draggable-handle chartheader move';
+  movebutton.src = 'https://img.icons8.com/ios-glyphs/30/resize-four-directions--v2.png';
   chartDiv.appendChild(movebutton);
 
   let charttitle = document.createElement('div');
-  charttitle.id = 'title';
   charttitle.innerHTML = chartLabel;
-  charttitle.className = 'chartheader';
+  charttitle.className = 'chartheader chart-title';
   charttitle.onclick = (event) => {
     changeDivTitle(event);
   };
@@ -565,7 +563,7 @@ async function createChart(chartLabel, chartData, chartType) {
 }
 
 async function createComparisionChart(designOneId, designTwoId, chartData, chartType) {
-  const dashboardsContainer = document.getElementById('aeccim-dashboards');
+  const dashboardsContainer = document.getElementById('aecdm-dashboards');
   let chartDiv = document.createElement("div");
   chartDiv.className = "chartDiv draggable";
 
@@ -573,27 +571,24 @@ async function createComparisionChart(designOneId, designTwoId, chartData, chart
   let designOneName = Array.from(designsList.children).find(n => n.value == designOneId).innerHTML;
   let designTwoName = Array.from(designsList.children).find(n => n.value == designTwoId).innerHTML;
 
-  let closebutton = document.createElement('div');
-  closebutton.id = 'close';
+  let closebutton = document.createElement('img');
   closebutton.onclick = function () {
     this.parentNode.remove();
     window.GLOBAL_CHARTS_COUNT--;
     return false;
   };
-  closebutton.innerHTML = 'X';
-  closebutton.className = 'chartheader';
+  closebutton.className = 'chartheader close';
+  closebutton.src = 'https://img.icons8.com/glyph-neue/64/delete-sign.png';
   chartDiv.appendChild(closebutton);
 
-  let movebutton = document.createElement('div');
-  movebutton.id = 'move';
-  movebutton.className = 'draggable-handle chartheader';
-  movebutton.innerHTML = 'M';
+  let movebutton = document.createElement('img');
+  movebutton.className = 'draggable-handle chartheader move';
+  movebutton.src = 'https://img.icons8.com/ios-glyphs/30/resize-four-directions--v2.png';
   chartDiv.appendChild(movebutton);
 
   let charttitle = document.createElement('div');
-  charttitle.id = 'title';
   charttitle.innerHTML = designOneName + ' x ' + designTwoName;
-  charttitle.className = 'chartheader';
+  charttitle.className = 'chartheader chart-title';
   charttitle.onclick = (event) => {
     changeDivTitle(event);
   };
@@ -673,7 +668,7 @@ function disableAddButtons() {
 }
 
 function prepareSwapFlexbox() {
-  const containers = document.querySelectorAll('#aeccim-dashboards');
+  const containers = document.querySelectorAll('#aecdm-dashboards');
 
   if (containers.length === 0) {
     return false;
