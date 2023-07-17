@@ -23,9 +23,30 @@
     margin: 0 0.5em;
   }
 
+.logo {
+  height: 2em;
+  margin: 0 0.5em;
+}
+
+.divinputs{
+  margin-right: 1em;
+}
+
+.btn{
+  margin: 4px;
+}
+
+.title{
+  color: white;
+}
+
 #login {
   font-family: ArtifaktElement;
   font-size: 1em;
+}
+
+.dropdowns{
+  margin-right: 2px;
 }
 
 .chartcanvas {
@@ -56,6 +77,7 @@
   border-style: solid;
   border-width: thick;
   padding: 10px;
+  box-sizing: content-box;
 }
 
 .tableHeader{
@@ -109,4 +131,8 @@
 .chart-title{
   font-size: 20px;
   white-space: nowrap;
+}
+
+.chartcanvas{
+  margin: 2px;
 }

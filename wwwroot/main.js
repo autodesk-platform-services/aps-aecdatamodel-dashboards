@@ -110,57 +110,57 @@ window.addEventListener("load", async () => {
     console.log(`filter ${formValues[1]} applied!`);
   };
 
-  const addComparisionChart = document.getElementById('comparedesigns');
-  addComparisionChart.onclick = async () => {
-    let designsJSON = await getProjectDesigns(document.getElementById('projectsdropdown').value);
-    updateDesignsList(designsJSON);
-    const { value: formValues } = await Swal.fire({
-      title: 'Add property-based comparision',
-      html:
-        '<span>Chart Type</span><select id="charttype" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;"><option value="radar">radar</option><option value="line">line</option></select>' +
-        '<span>First Design</span><input type="text" id="designone" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="First design name here!" list="designsList">' +
-        '<span>First Design</span><input type="number" id="versionone" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="First design name here!">' +
-        '<span>Second Design</span><input type="text" id="designtwo" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Second design name here!" list="designsList">' +
-        '<span>Second Design</span><input type="number" id="versiontwo" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Second design name here!">' +
-        '<span>Property</span><input type="text" id="property" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="Family Name" placeholder="Type a property name here!" list="querypropertiesList" novalidate>' +
-        '<span>Filter</span><input type="text" id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Type your filter here!" list="queryfiltersList">',
-      focusConfirm: false,
-      preConfirm: () => {
-        return [
-          document.getElementById('property').value,
-          document.getElementById('filter').value,
-          document.getElementById('designone').value,
-          document.getElementById('designtwo').value,
-          document.getElementById('charttype').value,
-          document.getElementById('versionone').value,
-          document.getElementById('versiontwo').value
-        ]
-      }
-    });
-    disableAddButtons();
-    let loadingDiv = createLoadingDiv();
-    let successfull = true;
-    try {
-      successfull = await handleComparisionChartCreation(formValues[0], formValues[1], formValues[2], formValues[3], formValues[4], formValues[5], formValues[6], loadingDiv);
-    }
-    catch (e) {
-      console.log(e);
-    }
-    try {
-      loadingDiv.remove();
-    }
-    catch (e) {
+  // const addComparisionChart = document.getElementById('comparedesigns');
+  // addComparisionChart.onclick = async () => {
+  //   let designsJSON = await getProjectDesigns(document.getElementById('projectsdropdown').value);
+  //   updateDesignsList(designsJSON);
+  //   const { value: formValues } = await Swal.fire({
+  //     title: 'Add property-based comparision',
+  //     html:
+  //       '<span>Chart Type</span><select id="charttype" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;"><option value="radar">radar</option><option value="line">line</option></select>' +
+  //       '<span>First Design</span><input type="text" id="designone" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="First design name here!" list="designsList">' +
+  //       '<span>First Design</span><input type="number" id="versionone" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="First design name here!">' +
+  //       '<span>Second Design</span><input type="text" id="designtwo" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Second design name here!" list="designsList">' +
+  //       '<span>Second Design</span><input type="number" id="versiontwo" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Second design name here!">' +
+  //       '<span>Property</span><input type="text" id="property" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="Family Name" placeholder="Type a property name here!" list="querypropertiesList" novalidate>' +
+  //       '<span>Filter</span><input type="text" id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Type your filter here!" list="queryfiltersList">',
+  //     focusConfirm: false,
+  //     preConfirm: () => {
+  //       return [
+  //         document.getElementById('property').value,
+  //         document.getElementById('filter').value,
+  //         document.getElementById('designone').value,
+  //         document.getElementById('designtwo').value,
+  //         document.getElementById('charttype').value,
+  //         document.getElementById('versionone').value,
+  //         document.getElementById('versiontwo').value
+  //       ]
+  //     }
+  //   });
+  //   disableAddButtons();
+  //   let loadingDiv = createLoadingDiv();
+  //   let successfull = true;
+  //   try {
+  //     successfull = await handleComparisionChartCreation(formValues[0], formValues[1], formValues[2], formValues[3], formValues[4], formValues[5], formValues[6], loadingDiv);
+  //   }
+  //   catch (e) {
+  //     console.log(e);
+  //   }
+  //   try {
+  //     loadingDiv.remove();
+  //   }
+  //   catch (e) {
 
-    }
-    if (!successfull)
-      showToast('Error! Please check console!');
-    enableAddButtons();
-    if (!successfull)
-      showToast('Error! Please check console!');
-    console.log(`Property ${formValues[0]} selected!`);
-    console.log(`filter ${formValues[1]} applied!`);
+  //   }
+  //   if (!successfull)
+  //     showToast('Error! Please check console!');
+  //   enableAddButtons();
+  //   if (!successfull)
+  //     showToast('Error! Please check console!');
+  //   console.log(`Property ${formValues[0]} selected!`);
+  //   console.log(`filter ${formValues[1]} applied!`);
 
-  };
+  // };
 
   try {
     const resp = await fetch('/api/auth/profile');
@@ -685,7 +685,7 @@ function enableAddButtons() {
   document.querySelector('#addtable').disabled = false;
   document.querySelector('#projectsdropdown').disabled = false;
   document.querySelector('#hubsdropdown').disabled = false;
-  document.querySelector('#comparedesigns').disabled = false;
+  // document.querySelector('#comparedesigns').disabled = false;
 }
 
 function disableAddButtons() {
@@ -693,7 +693,7 @@ function disableAddButtons() {
   document.querySelector('#addtable').disabled = true;
   document.querySelector('#projectsdropdown').disabled = true;
   document.querySelector('#hubsdropdown').disabled = true;
-  document.querySelector('#comparedesigns').disabled = true;
+  // document.querySelector('#comparedesigns').disabled = true;
 }
 
 function prepareSwapFlexbox() {
