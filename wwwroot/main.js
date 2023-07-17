@@ -141,61 +141,17 @@ window.addEventListener("load", async () => {
     let loadingDiv = createLoadingDiv();
     let successfull = true;
     try {
-      //Design One
-      let respJSON = await getVersionElementsProperty(formValues[2], formValues[5], formValues[1], formValues[0])
-      let cursor = respJSON.data.elements.pagination.cursor;
-      let chartDataOne = {};
-      for (const result of respJSON.data.elements.results) {
-        if (!chartDataOne[result.properties.results[0].value])
-          chartDataOne[result.properties.results[0].value] = 0
-        chartDataOne[result.properties.results[0].value]++
-      }
-      while (!!cursor) {
-        let newRespJSON = await getVersionElementsPropertyPaginated(formValues[2], formValues[5], formValues[1], formValues[0], cursor)
-        cursor = newRespJSON.data.elements.pagination.cursor;
-        for (const result of newRespJSON.data.elements.results) {
-          if (!chartDataOne[result.properties.results[0].value])
-            chartDataOne[result.properties.results[0].value] = 0
-          chartDataOne[result.properties.results[0].value]++
-        }
-      }
-
-      //Design Two
-      respJSON = await getVersionElementsProperty(formValues[3], formValues[6], formValues[1], formValues[0])
-      cursor = respJSON.data.elements.pagination.cursor;
-      let chartDataTwo = {};
-      for (const result of respJSON.data.elements.results) {
-        if (!chartDataTwo[result.properties.results[0].value])
-          chartDataTwo[result.properties.results[0].value] = 0
-        chartDataTwo[result.properties.results[0].value]++
-      }
-      while (!!cursor) {
-        let newRespJSON = await getVersionElementsPropertyPaginated(formValues[3], formValues[6], formValues[1], formValues[0], cursor)
-        cursor = newRespJSON.data.elements.pagination.cursor;
-        for (const result of newRespJSON.data.elements.results) {
-          if (!chartDataTwo[result.properties.results[0].value])
-            chartDataTwo[result.properties.results[0].value] = 0
-          chartDataTwo[result.properties.results[0].value]++
-        }
-      }
-
-      let chartData = aggregateDesignsData(chartDataOne, chartDataTwo);
-
-      if (Object.keys(chartData).length > 0) {
-        loadingDiv.remove();
-        createComparisionChart(formValues[2], formValues[3], chartData, formValues[4]);
-      }
-      else {
-        console.log(`${chartData.length} elements found in designs!`);
-        successfull = false;
-      }
-
+      successfull = await handleComparisionChartCreation(formValues[0], formValues[1], formValues[2], formValues[3], formValues[4], formValues[5], formValues[6], loadingDiv);
     }
     catch (e) {
-      successfull = false;
       console.log(e);
     }
-    loadingDiv.remove();
+    try {
+      loadingDiv.remove();
+    }
+    catch (e) {
+
+    }
     if (!successfull)
       showToast('Error! Please check console!');
     enableAddButtons();
@@ -222,6 +178,75 @@ window.addEventListener("load", async () => {
     console.error(err);
   }
 });
+
+async function handleComparisionChartCreation(property, filter, designOne, designTwo, chartType, versionOne, versionTwo, loadingDiv) {
+  let successfull = true;
+  try {
+    let elementsFound = 0;
+    //Design One
+    let respJSON = await getVersionElementsProperty(designOne, versionOne, filter, property)
+    let cursor = respJSON.data.elementsByDesignAtVersion.pagination.cursor;
+    let chartDataOne = {};
+    for (const result of respJSON.data.elementsByDesignAtVersion.results) {
+      if (!chartDataOne[result.properties.results[0].value])
+        chartDataOne[result.properties.results[0].value] = 0
+      chartDataOne[result.properties.results[0].value]++;
+      elementsFound++;
+    }
+    loadingDiv.lastChild.lastChild.lastChild.childNodes[5].innerHTML = `Loading Data: ${elementsFound} elements found`;
+    while (!!cursor) {
+      let newRespJSON = await getVersionElementsPropertyPaginated(designOne, versionOne, filter, property, cursor)
+      cursor = newRespJSON.data.elementsByDesignAtVersion.pagination.cursor;
+      for (const result of newRespJSON.data.elementsByDesignAtVersion.results) {
+        if (!chartDataOne[result.properties.results[0].value])
+          chartDataOne[result.properties.results[0].value] = 0
+        chartDataOne[result.properties.results[0].value]++;
+        elementsFound++;
+      }
+      loadingDiv.lastChild.lastChild.lastChild.childNodes[5].innerHTML = `Loading Data: ${elementsFound} elements found`;
+    }
+
+    //Design Two
+    respJSON = await getVersionElementsProperty(designTwo, versionTwo, filter, property)
+    cursor = respJSON.data.elementsByDesignAtVersion.pagination.cursor;
+    let chartDataTwo = {};
+    for (const result of respJSON.data.elementsByDesignAtVersion.results) {
+      if (!chartDataTwo[result.properties.results[0].value])
+        chartDataTwo[result.properties.results[0].value] = 0
+      chartDataTwo[result.properties.results[0].value]++;
+      elementsFound++;
+    }
+    loadingDiv.lastChild.lastChild.lastChild.childNodes[5].innerHTML = `Loading Data: ${elementsFound} elements found`;
+    while (!!cursor) {
+      let newRespJSON = await getVersionElementsPropertyPaginated(designTwo, versionTwo, filter, property, cursor)
+      cursor = newRespJSON.data.elementsByDesignAtVersion.pagination.cursor;
+      for (const result of newRespJSON.data.elementsByDesignAtVersion.results) {
+        if (!chartDataTwo[result.properties.results[0].value])
+          chartDataTwo[result.properties.results[0].value] = 0
+        chartDataTwo[result.properties.results[0].value]++;
+        elementsFound++;
+      }
+      loadingDiv.lastChild.lastChild.lastChild.childNodes[5].innerHTML = `Loading Data: ${elementsFound} elements found`;
+    }
+
+    let chartData = aggregateDesignsData(chartDataOne, chartDataTwo);
+    let equalKeys = Object.keys(chartData).filter(k => chartData[k][0] == chartData[k][1]);
+    equalKeys.map(ek => delete chartData[ek]);
+
+    if (Object.keys(chartData).length > 0) {
+      loadingDiv.remove();
+      createComparisionChart(designOne, designTwo, chartData, chartType);
+    }
+    else {
+      console.log(`${chartData.length} elements found in designs!`);
+      successfull = false;
+    }
+  }
+  catch (e) {
+    successfull = false;
+    console.log(e);
+  }
+}
 
 async function handleChartCreation(projectId, filter, property, loadingDiv, chartType, chartTitle) {
   let successfull = true;

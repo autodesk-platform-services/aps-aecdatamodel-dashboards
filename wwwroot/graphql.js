@@ -226,8 +226,8 @@ export async function getDesignElementsPropertyPaginated(designId, filter, prope
 export async function getVersionElementsProperty(designId, versionNumber, filter, propertyName) {
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {
-    query: `query elementsByDesignAtVersion {
-      elements(designId: "${designId}", versionNumber:${versionNumber}, filter:{query:"${filter}"}) {
+    query: `query getVersionElementsProperty {
+      elementsByDesignAtVersion(designId: "${designId}", versionNumber:${parseFloat(versionNumber)}, filter:{query:"${filter}"}) {
         pagination{cursor}
         results{
           name
@@ -241,7 +241,7 @@ export async function getVersionElementsProperty(designId, versionNumber, filter
       }
     }`,
     variables: undefined,
-    operationName: "getDesignElementsProperty"
+    operationName: "getVersionElementsProperty"
   }
   const options = {
     method: 'POST',
@@ -264,7 +264,7 @@ export async function getVersionElementsPropertyPaginated(designId, versionNumbe
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {
     query: `query getDesignElementsProperty {
-      elements(designId: "${designId}", versionNumber:${versionNumber} filter:{query:"${filter}"}, pagination:{cursor:"${cursor}"}) {
+      elementsByDesignAtVersion(designId: "${designId}", versionNumber:${parseFloat(versionNumber)} filter:{query:"${filter}"}, pagination:{cursor:"${cursor}"}) {
         pagination{cursor}
         results{
           name
