@@ -122,10 +122,12 @@
 .move{
   cursor: move;
   height: 20px;
+  z-index: 99;
 }
 
 .close{
   height: 20px;
+  z-index: 99;
 }
 
 .chart-title{
