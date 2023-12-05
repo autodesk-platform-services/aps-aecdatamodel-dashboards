@@ -2,6 +2,10 @@
 
 This sample integrates AEC Data Model API with [Tabulator](https://tabulator.info) and [Chart.js](https://www.chartjs.org) to generate tables and charts based on your AEC data.
 
+## DEMO
+
+https://aecdatamodel-dashboards.autodesk.io
+
 ## Setting up the app
 
 - clone this repository or download
