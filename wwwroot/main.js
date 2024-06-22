@@ -5,7 +5,7 @@ const autocolors = window['chartjs-plugin-autocolors'];
 window.GLOBAL_CHARTS_COUNT = 0;
 
 window.addEventListener("load", async () => {
-  const login = document.getElementById('login');
+  const signin = document.getElementById('signin');
   const hubsDropDown = document.getElementById('hubsdropdown');
   let hubsResponse = await getHubs();
   if (!!hubsResponse.data) {
@@ -110,69 +110,17 @@ window.addEventListener("load", async () => {
     console.log(`filter ${formValues[1]} applied!`);
   };
 
-  // const addComparisionChart = document.getElementById('comparedesigns');
-  // addComparisionChart.onclick = async () => {
-  //   let designsJSON = await getProjectDesigns(document.getElementById('projectsdropdown').value);
-  //   updateDesignsList(designsJSON);
-  //   const { value: formValues } = await Swal.fire({
-  //     title: 'Add property-based comparision',
-  //     html:
-  //       '<span>Chart Type</span><select id="charttype" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;"><option value="radar">radar</option><option value="line">line</option></select>' +
-  //       '<span>First Design</span><input type="text" id="designone" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="First design name here!" list="designsList">' +
-  //       '<span>First Design</span><input type="number" id="versionone" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="First design name here!">' +
-  //       '<span>Second Design</span><input type="text" id="designtwo" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Second design name here!" list="designsList">' +
-  //       '<span>Second Design</span><input type="number" id="versiontwo" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Second design name here!">' +
-  //       '<span>Property</span><input type="text" id="property" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" value="Family Name" placeholder="Type a property name here!" list="querypropertiesList" novalidate>' +
-  //       '<span>Filter</span><input type="text" id="filter" class="swal2-input" style="font-size: 0.8em; width: 300px; margin-left: 80px;" placeholder="Type your filter here!" list="queryfiltersList">',
-  //     focusConfirm: false,
-  //     preConfirm: () => {
-  //       return [
-  //         document.getElementById('property').value,
-  //         document.getElementById('filter').value,
-  //         document.getElementById('designone').value,
-  //         document.getElementById('designtwo').value,
-  //         document.getElementById('charttype').value,
-  //         document.getElementById('versionone').value,
-  //         document.getElementById('versiontwo').value
-  //       ]
-  //     }
-  //   });
-  //   disableAddButtons();
-  //   let loadingDiv = createLoadingDiv();
-  //   let successfull = true;
-  //   try {
-  //     successfull = await handleComparisionChartCreation(formValues[0], formValues[1], formValues[2], formValues[3], formValues[4], formValues[5], formValues[6], loadingDiv);
-  //   }
-  //   catch (e) {
-  //     console.log(e);
-  //   }
-  //   try {
-  //     loadingDiv.remove();
-  //   }
-  //   catch (e) {
-
-  //   }
-  //   if (!successfull)
-  //     showToast('Error! Please check console!');
-  //   enableAddButtons();
-  //   if (!successfull)
-  //     showToast('Error! Please check console!');
-  //   console.log(`Property ${formValues[0]} selected!`);
-  //   console.log(`filter ${formValues[1]} applied!`);
-
-  // };
-
   try {
     const resp = await fetch('/api/auth/profile');
     if (resp.ok) {
       const user = await resp.json();
-      login.innerText = `Logout (${user.name})`;
-      login.onclick = () => window.location.replace('/api/auth/logout');
+      signin.innerText = `Sign out (${user.name})`;
+      signin.onclick = () => window.location.replace('/api/auth/signout');
     } else {
-      login.innerText = 'Login';
-      login.onclick = () => window.location.replace('/api/auth/login');
+      signin.innerText = 'Sign in';
+      signin.onclick = () => window.location.replace('/api/auth/signin');
     }
-    login.style.visibility = 'visible';
+    signin.style.visibility = 'visible';
   } catch (err) {
     alert('Could not initialize the application. See console for more details.');
     console.error(err);
