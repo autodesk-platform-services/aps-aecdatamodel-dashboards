@@ -1,4 +1,4 @@
-﻿let graphql_url = 'https://developer.api.autodesk.com/aecdatamodel/graphql';
+﻿let graphql_url = 'https://developer.api.autodesk.com/aec/graphql';
 
 export async function getHubs() {
   let token = await (await fetch('/api/auth/token')).json();
@@ -53,7 +53,7 @@ export async function getProjects(hubId) {
 export async function getProjectDesigns(projectId) {
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {
-    query: `query GetProjectDesigns {  aecDesignsByProject(projectId: "${projectId}") {    results {      name     id    }  }}`,
+    query: `query GetProjectDesigns {  elementGroupsByProject(projectId: "${projectId}") {    results {      name     id    }  }}`,
     variables: undefined,
     operationName: "GetProjectDesigns"
   };
@@ -149,11 +149,11 @@ export async function getProjectElementsPropertyPaginated(projectId, filter, pro
   return respJSON;
 }
 
-export async function getDesignElementsProperty(designId, filter, propertyName) {
+export async function getDesignElementsProperty(elementGroupId, filter, propertyName) {
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {
     query: `query getDesignElementsProperty {
-      elements(designId: "${designId}", filter:{query:"${filter}"}) {
+      elementsByElementGroup(elementGroupId: "${elementGroupId}", filter:{query:"${filter}"}) {
         pagination{cursor}
         results{
           name
@@ -186,11 +186,11 @@ export async function getDesignElementsProperty(designId, filter, propertyName) 
   return respJSON;
 }
 
-export async function getDesignElementsPropertyPaginated(designId, filter, propertyName, cursor) {
+export async function getDesignElementsPropertyPaginated(elementGroupId, filter, propertyName, cursor) {
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {
     query: `query getDesignElementsProperty {
-      elements(designId: "${designId}", filter:{query:"${filter}"}, pagination:{cursor:"${cursor}"}) {
+      elementsByElementGroup(elementGroupId: "${elementGroupId}", filter:{query:"${filter}"}, pagination:{cursor:"${cursor}"}) {
         pagination{cursor}
         results{
           name
@@ -223,11 +223,11 @@ export async function getDesignElementsPropertyPaginated(designId, filter, prope
   return respJSON;
 }
 
-export async function getVersionElementsProperty(designId, versionNumber, filter, propertyName) {
+export async function getVersionElementsProperty(elementGroupId, versionNumber, filter, propertyName) {
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {
     query: `query getVersionElementsProperty {
-      elementsByDesignAtVersion(designId: "${designId}", versionNumber:${parseFloat(versionNumber)}, filter:{query:"${filter}"}) {
+      elementsByElementGroupAtVersion(elementGroupId: "${elementGroupId}", versionNumber:${parseFloat(versionNumber)}, filter:{query:"${filter}"}) {
         pagination{cursor}
         results{
           name
@@ -260,11 +260,11 @@ export async function getVersionElementsProperty(designId, versionNumber, filter
   return respJSON;
 }
 
-export async function getVersionElementsPropertyPaginated(designId, versionNumber, filter, propertyName, cursor) {
+export async function getVersionElementsPropertyPaginated(elementGroupId, versionNumber, filter, propertyName, cursor) {
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {
     query: `query getDesignElementsProperty {
-      elementsByDesignAtVersion(designId: "${designId}", versionNumber:${parseFloat(versionNumber)} filter:{query:"${filter}"}, pagination:{cursor:"${cursor}"}) {
+      elementsByElementGroupAtVersion(elementGroupId: "${elementGroupId}", versionNumber:${parseFloat(versionNumber)} filter:{query:"${filter}"}, pagination:{cursor:"${cursor}"}) {
         pagination{cursor}
         results{
           name
