@@ -3,6 +3,7 @@
 const autocolors = window['chartjs-plugin-autocolors'];
 
 window.GLOBAL_CHARTS_COUNT = 0;
+window.ID_REGIONS = {};
 
 window.addEventListener("load", async () => {
   const signin = document.getElementById('signin');
@@ -15,13 +16,27 @@ window.addEventListener("load", async () => {
       hubOption.text = hub.name;
       hubOption.value = hub.id;
       hubsDropDown.appendChild(hubOption);
+      window.ID_REGIONS[hub.id] = 'US';
+    }
+  }
+  let emeaHubsResponse = await getHubs('EMEA');
+  if (!!emeaHubsResponse.data) {
+    hubsDropDown
+    for (const hub of Object.values(emeaHubsResponse.data.hubs.results)) {
+      let hubOption = document.createElement("option");
+      hubOption.text = hub.name;
+      hubOption.value = hub.id;
+      hubsDropDown.appendChild(hubOption);
+      window.ID_REGIONS[hub.id] = 'EMEA';
     }
   }
 
   const projectsDropDown = document.getElementById('projectsdropdown');
   hubsDropDown.onchange = async () => {
     projectsDropDown.innerHTML = '<option value="" disabled selected>Select your project</option>';
-    let projectsResponse = await getProjects(hubsDropDown.value);
+    let hubId = hubsDropDown.value;
+    let region = getRegionFromId(hubId);
+    let projectsResponse = await getProjects(hubId, region);
     for (const project of Object.values(projectsResponse.data.projects.results)) {
       let projectOption = document.createElement("option");
       projectOption.text = project.name;
@@ -61,7 +76,9 @@ window.addEventListener("load", async () => {
     let loadingDiv = createLoadingDiv();
     let successfull = true;
     try {
-      successfull = await handleChartCreation(document.getElementById('projectsdropdown').value, formValues[1], formValues[0], loadingDiv, formValues[2]);
+      let projectId = document.getElementById('projectsdropdown').value;
+      let region = getRegionFromId(projectId);
+      successfull = await handleChartCreation(projectId, formValues[1], formValues[0], loadingDiv, formValues[2], region);
     }
     catch (e) {
       console.log(e);
@@ -126,6 +143,10 @@ window.addEventListener("load", async () => {
     console.error(err);
   }
 });
+
+function getRegionFromId(id){
+  return window.ID_REGIONS[id]
+}
 
 async function handleComparisionChartCreation(property, filter, designOne, designTwo, chartType, versionOne, versionTwo, loadingDiv) {
   let successfull = true;
@@ -196,10 +217,10 @@ async function handleComparisionChartCreation(property, filter, designOne, desig
   }
 }
 
-async function handleChartCreation(projectId, filter, property, loadingDiv, chartType, chartTitle) {
+async function handleChartCreation(projectId, filter, property, loadingDiv, chartType, chartTitle, region) {
   let successfull = true;
   try {
-    let respJSON = await getProjectElementsProperty(projectId, filter, property);
+    let respJSON = await getProjectElementsProperty(projectId, filter, property, region);
     let cursor = respJSON.data.elementsByProject.pagination.cursor;
     let chartData = {};
     let elementsFound = 0;
@@ -211,7 +232,7 @@ async function handleChartCreation(projectId, filter, property, loadingDiv, char
     }
     loadingDiv.lastChild.lastChild.lastChild.childNodes[5].innerHTML = `Loading Data: ${elementsFound} elements found`;
     while (!!cursor) {
-      let newRespJSON = await getProjectElementsPropertyPaginated(projectId, filter, property, cursor);
+      let newRespJSON = await getProjectElementsPropertyPaginated(projectId, filter, property, cursor, region);
       cursor = newRespJSON.data.elementsByProject.pagination.cursor;
       for (const result of newRespJSON.data.elementsByProject.results) {
         if (!chartData[result.properties.results[0].value])
@@ -245,7 +266,8 @@ async function handleChartCreation(projectId, filter, property, loadingDiv, char
 async function handleTableCreation(projectId, filter, propertiesNames, loadingDiv, tableTitle) {
   let successfull = true;
   try {
-    let respJSON = await getProjectElementsProperties(projectId, filter, propertiesNames)
+    let region = getRegionFromId(projectId);
+    let respJSON = await getProjectElementsProperties(projectId, filter, propertiesNames, region);
     let cursor = respJSON.data.elementsByProject.pagination.cursor;
     let tableData = [];
     for (const result of respJSON.data.elementsByProject.results) {
@@ -258,7 +280,7 @@ async function handleTableCreation(projectId, filter, propertiesNames, loadingDi
     }
     loadingDiv.lastChild.lastChild.lastChild.childNodes[5].innerHTML = `Loading Data: ${tableData.length} elements found`;
     while (!!cursor) {
-      let newRespJSON = await getProjectElementsPropertiesPaginated(projectId, filter, propertiesNames, cursor)
+      let newRespJSON = await getProjectElementsPropertiesPaginated(projectId, filter, propertiesNames, cursor, region)
       cursor = newRespJSON.data.elementsByProject.pagination.cursor;
       for (const result of newRespJSON.data.elementsByProject.results) {
         let newObj = {};
@@ -293,16 +315,17 @@ async function handleTableCreation(projectId, filter, propertiesNames, loadingDi
 }
 
 async function loadDefaultContent(projectId) {
-  await addDefaultTable(projectId, "property.name.category=='Rooms' and 'property.name.Element Context'==Instance", 'Name,Occupancy,Number,Perimeter,Area,Element Name,Volume', 'RoomsTakeoffTable');
-  await addDefaultChart(projectId, "property.name.category=='Rooms' and 'property.name.Element Context'==Instance", 'Element Name', 'bar', 'RoomsTakeoffChart');
-  await addDefaultTable(projectId, "property.name.category=='Doors' and 'property.name.Element Context'==Instance", 'Height,Width,Element Name', 'DoorsTakeoffTable');
-  await addDefaultChart(projectId, "property.name.category=='Doors' and 'property.name.Element Context'==Instance", 'Element Name', 'bar', 'DoorsTakeoffChart');
+  let region = getRegionFromId(projectId);
+  await addDefaultTable(projectId, "property.name.category=='Rooms' and 'property.name.Element Context'==Instance", 'Name,Occupancy,Number,Perimeter,Area,Element Name,Volume', 'RoomsTakeoffTable', region);
+  await addDefaultChart(projectId, "property.name.category=='Rooms' and 'property.name.Element Context'==Instance", 'Element Name', 'bar', 'RoomsTakeoffChart', region);
+  await addDefaultTable(projectId, "property.name.category=='Doors' and 'property.name.Element Context'==Instance", 'Height,Width,Element Name', 'DoorsTakeoffTable', region);
+  await addDefaultChart(projectId, "property.name.category=='Doors' and 'property.name.Element Context'==Instance", 'Element Name', 'bar', 'DoorsTakeoffChart', region);
 }
 
-async function addDefaultChart(projectId, filter, property, chartType, chartName) {
+async function addDefaultChart(projectId, filter, property, chartType, chartName, region) {
   disableAddButtons();
   let loadingDiv = createLoadingDiv();
-  let successfull = await handleChartCreation(projectId, filter, property, loadingDiv, chartType, chartName);
+  let successfull = await handleChartCreation(projectId, filter, property, loadingDiv, chartType, chartName, region);
   try {
     loadingDiv.remove();
   }
@@ -316,10 +339,10 @@ async function addDefaultChart(projectId, filter, property, chartType, chartName
     showToast('Error! Please check console!');
 }
 
-async function addDefaultTable(projectId, filter, properties, tableName) {
+async function addDefaultTable(projectId, filter, properties, tableName, region) {
   disableAddButtons();
   let loadingDiv = createLoadingDiv();
-  let successfull = await handleTableCreation(projectId, filter, properties, loadingDiv, tableName);
+  let successfull = await handleTableCreation(projectId, filter, properties, loadingDiv, tableName, region);
   try {
     loadingDiv.remove();
   }

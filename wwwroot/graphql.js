@@ -1,6 +1,6 @@
 ﻿let graphql_url = 'https://developer.api.autodesk.com/aec/graphql';
 
-export async function getHubs() {
+export async function getHubs(region = 'US') {
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {
     query: "query GetHubs {  hubs {    results {     name      id   }  }}",
@@ -11,7 +11,8 @@ export async function getHubs() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + token.access_token
+      Authorization: 'Bearer ' + token.access_token,
+      'region':region
     },
     body: JSON.stringify(jsonBody)
   };
@@ -25,7 +26,7 @@ export async function getHubs() {
   return respJSON;
 }
 
-export async function getProjects(hubId) {
+export async function getProjects(hubId, region = 'US') {
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {
     query: `query GetProjects {  projects(hubId: "${hubId}") {    results {      name     id    }  }}`,
@@ -36,7 +37,8 @@ export async function getProjects(hubId) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + token.access_token
+      Authorization: 'Bearer ' + token.access_token,
+      'region':region
     },
     body: JSON.stringify(jsonBody)
   };
@@ -50,7 +52,7 @@ export async function getProjects(hubId) {
   return respJSON;
 }
 
-export async function getProjectDesigns(projectId) {
+export async function getProjectDesigns(projectId, region = 'US') {
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {
     query: `query GetProjectDesigns {  elementGroupsByProject(projectId: "${projectId}") {    results {      name     id    }  }}`,
@@ -61,7 +63,8 @@ export async function getProjectDesigns(projectId) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + token.access_token
+      Authorization: 'Bearer ' + token.access_token,
+      'region':region
     },
     body: JSON.stringify(jsonBody)
   };
@@ -75,7 +78,7 @@ export async function getProjectDesigns(projectId) {
   return respJSON;
 }
 
-export async function getProjectElementsProperty(projectId, filter, propertyName) {
+export async function getProjectElementsProperty(projectId, filter, propertyName, region = 'US') {
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {
     query: `query getProjectElementsProperty {
@@ -99,7 +102,8 @@ export async function getProjectElementsProperty(projectId, filter, propertyName
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + token.access_token
+      Authorization: 'Bearer ' + token.access_token,
+      'region':region
     },
     body: JSON.stringify(jsonBody)
   };
@@ -112,7 +116,7 @@ export async function getProjectElementsProperty(projectId, filter, propertyName
   return respJSON;
 }
 
-export async function getProjectElementsPropertyPaginated(projectId, filter, propertyName, cursor) {
+export async function getProjectElementsPropertyPaginated(projectId, filter, propertyName, cursor, region = 'US') {
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {
     query: `query getProjectElementsProperty {
@@ -136,7 +140,8 @@ export async function getProjectElementsPropertyPaginated(projectId, filter, pro
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + token.access_token
+      Authorization: 'Bearer ' + token.access_token,
+      'region':region
     },
     body: JSON.stringify(jsonBody)
   };
@@ -149,7 +154,7 @@ export async function getProjectElementsPropertyPaginated(projectId, filter, pro
   return respJSON;
 }
 
-export async function getDesignElementsProperty(elementGroupId, filter, propertyName) {
+export async function getDesignElementsProperty(elementGroupId, filter, propertyName, region = 'US') {
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {
     query: `query getDesignElementsProperty {
@@ -173,7 +178,8 @@ export async function getDesignElementsProperty(elementGroupId, filter, property
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + token.access_token
+      Authorization: 'Bearer ' + token.access_token,
+      'region':region
     },
     body: JSON.stringify(jsonBody)
   };
@@ -186,7 +192,7 @@ export async function getDesignElementsProperty(elementGroupId, filter, property
   return respJSON;
 }
 
-export async function getDesignElementsPropertyPaginated(elementGroupId, filter, propertyName, cursor) {
+export async function getDesignElementsPropertyPaginated(elementGroupId, filter, propertyName, cursor, region = 'US') {
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {
     query: `query getDesignElementsProperty {
@@ -210,7 +216,8 @@ export async function getDesignElementsPropertyPaginated(elementGroupId, filter,
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + token.access_token
+      Authorization: 'Bearer ' + token.access_token,
+      'region':region
     },
     body: JSON.stringify(jsonBody)
   };
@@ -223,7 +230,7 @@ export async function getDesignElementsPropertyPaginated(elementGroupId, filter,
   return respJSON;
 }
 
-export async function getVersionElementsProperty(elementGroupId, versionNumber, filter, propertyName) {
+export async function getVersionElementsProperty(elementGroupId, versionNumber, filter, propertyName, region = 'US') {
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {
     query: `query getVersionElementsProperty {
@@ -247,7 +254,8 @@ export async function getVersionElementsProperty(elementGroupId, versionNumber, 
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + token.access_token
+      Authorization: 'Bearer ' + token.access_token,
+      'region':region
     },
     body: JSON.stringify(jsonBody)
   };
@@ -260,7 +268,7 @@ export async function getVersionElementsProperty(elementGroupId, versionNumber, 
   return respJSON;
 }
 
-export async function getVersionElementsPropertyPaginated(elementGroupId, versionNumber, filter, propertyName, cursor) {
+export async function getVersionElementsPropertyPaginated(elementGroupId, versionNumber, filter, propertyName, cursor, region = 'US') {
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {
     query: `query getDesignElementsProperty {
@@ -284,7 +292,8 @@ export async function getVersionElementsPropertyPaginated(elementGroupId, versio
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + token.access_token
+      Authorization: 'Bearer ' + token.access_token,
+      'region':region
     },
     body: JSON.stringify(jsonBody)
   };
@@ -297,7 +306,7 @@ export async function getVersionElementsPropertyPaginated(elementGroupId, versio
   return respJSON;
 }
 
-export async function getProjectElementsProperties(projectId, filter, propertiesNames) {
+export async function getProjectElementsProperties(projectId, filter, propertiesNames, region = 'US') {
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {
     query: `query getProjectElementsProperties {
@@ -321,7 +330,8 @@ export async function getProjectElementsProperties(projectId, filter, properties
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + token.access_token
+      Authorization: 'Bearer ' + token.access_token,
+      'region':region
     },
     body: JSON.stringify(jsonBody)
   };
@@ -334,7 +344,7 @@ export async function getProjectElementsProperties(projectId, filter, properties
   return respJSON;
 }
 
-export async function getProjectElementsPropertiesPaginated(projectId, filter, propertiesNames, cursor) {
+export async function getProjectElementsPropertiesPaginated(projectId, filter, propertiesNames, cursor, region = 'US') {
   let token = await (await fetch('/api/auth/token')).json();
   let jsonBody = {
     query: `query getProjectElementsProperties {
@@ -358,7 +368,8 @@ export async function getProjectElementsPropertiesPaginated(projectId, filter, p
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + token.access_token
+      Authorization: 'Bearer ' + token.access_token,
+      'region':region
     },
     body: JSON.stringify(jsonBody)
   };
